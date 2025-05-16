@@ -28,7 +28,7 @@ const loginForm = () => {
       <div className="w-full md:w-1/2 flex items-center justify-center px-6 py-8 bg-white">
         <div className="w-full max-w-md p-6 space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-indigo-700">NewMedihub</h1>
+            <h1 className="text-3xl font-bold text-indigo-700">Smart Medihub</h1>
             <p className="mt-2 text-gray-600">Welcome back! Please sign in to your account</p>
           </div>
           
@@ -137,23 +137,12 @@ const loginForm = () => {
       
       {/* Right side - Illustration */}
       <div className="hidden md:flex w-full md:w-1/2 bg-indigo-50 items-center justify-center">
-        <div className="p-8 w-full max-w-lg">
-          <svg className="w-full" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#818cf8" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <circle cx="250" cy="250" r="200" fill="#f5f3ff" />
-            <path d="M370 250a120 120 0 11-240 0 120 120 0 01240 0z" fill="url(#grad1)" />
-            <path d="M320 250a70 70 0 11-140 0 70 70 0 01140 0z" fill="#f5f3ff" />
-            <path fill="#4f46e5" d="M230 180h40v140h-40z" />
-            <path fill="#4f46e5" d="M180 230h140v40H180z" />
-            <circle cx="250" cy="250" r="20" fill="#f5f3ff" />
-            <path d="M390 150c-10-30-30-50-60-60M110 150c10-30 30-50 60-60M390 350c-10 30-30 50-60 60M110 350c10 30 30 50 60 60" stroke="#4f46e5" strokeWidth="8" fill="none" strokeLinecap="round" />
-          </svg>
-        </div>
+        <img
+          src="https://cdn.dribbble.com/userupload/4991626/file/original-4f09fa90fa3bcb87ff506d39446dbcb2.gif"
+          alt="Login Illustration"
+          className="w-full h-full object-cover rounded-xl"
+        />
+
       </div>
     </div>
   );
