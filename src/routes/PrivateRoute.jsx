@@ -1,11 +1,12 @@
-// src/routes/PrivateRoute.jsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchUserProfile } from '../redux/slices/authSlice';
+import { useDispatch } from 'react-redux';
+import useAuth from '../hooks/useAuth';
+import { getUserProfile } from '../redux/auth/authActions';
 
 const PrivateRoute = () => {
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  // Make sure loading is destructured from useAuth as well
+  const { isAuthenticated, user, loading } = useAuth();
   const dispatch = useDispatch();
   const location = useLocation();
   
@@ -13,9 +14,9 @@ const PrivateRoute = () => {
     // Check if token exists but user is not loaded yet
     const token = localStorage.getItem('token');
     if (token && !isAuthenticated && !loading) {
-      dispatch(fetchUserProfile());
+      dispatch(getUserProfile());
     }
-  }, [isAuthenticated, loading, dispatch]);
+  }, [isAuthenticated, user, loading, dispatch]);
   
   // Show loading state if we're checking authentication
   if (loading) {

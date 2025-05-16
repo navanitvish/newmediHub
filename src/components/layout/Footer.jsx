@@ -1,63 +1,153 @@
 // src/components/layout/Footer.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  
   return (
-    <footer className="bg-gray-100 py-8 mt-12">
-    <div className="max-w-6xl mx-auto px-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <h3 className="font-bold mb-4">About NewmediHub </h3>
-          <ul className="space-y-2 text-sm">
-            <li><button className="text-gray-600 hover:text-gray-900">About Us</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">Contact Us</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">FAQs</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">Health Queries</button></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 className="font-bold mb-4">Our Services</h3>
-          <ul className="space-y-2 text-sm">
-            <li><button className="text-gray-600 hover:text-gray-900">Lab Tests</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">Health Packages</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">Doctor Consultation</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900">Pharmacy</button></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 className="font-bold mb-4">Top Cities</h3>
-          <ul className="space-y-2 text-sm">
-            <li><button className="text-gray-600 hover:text-gray-900" onClick={() => handleCityChange('Delhi')}>Delhi</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900" onClick={() => handleCityChange('Mumbai')}>Mumbai</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900" onClick={() => handleCityChange('Bangalore')}>Bangalore</button></li>
-            <li><button className="text-gray-600 hover:text-gray-900" onClick={() => handleCityChange('Hyderabad')}>Hyderabad</button></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 className="font-bold mb-4">Connect With Us</h3>
-          <div className="flex space-x-4 mb-4">
-            <button className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center">f</button>
-            <button className="bg-blue-400 text-white w-8 h-8 rounded-full flex items-center justify-center">t</button>
-            <button className="bg-pink-600 text-white w-8 h-8 rounded-full flex items-center justify-center">i</button>
-            <button className="bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center">y</button>
+    <footer className="bg-gray-900 text-white pt-12 pb-6">
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Footer Top Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {/* Company Info */}
+          <div>
+            <h3 className="text-xl font-bold mb-4">MediLab</h3>
+            <p className="text-gray-400 mb-4">
+              India's leading diagnostic services provider, offering precise laboratory tests and health checkups with home collection across major cities.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white transition">
+                <Facebook size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition">
+                <Twitter size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition">
+                <Instagram size={20} />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-white transition">
+                <Linkedin size={20} />
+              </a>
+            </div>
           </div>
-          <div className="text-sm text-gray-600">
-            Customer Support: <span className="font-medium">1800-XXX-XXXX</span>
+          
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/about" className="text-gray-400 hover:text-white transition">About Us</Link>
+              </li>
+              <li>
+                <Link to="/lab-tests" className="text-gray-400 hover:text-white transition">Lab Tests</Link>
+              </li>
+              <li>
+                <Link to="/health-packages" className="text-gray-400 hover:text-white transition">Health Packages</Link>
+              </li>
+              <li>
+                <Link to="/health-articles" className="text-gray-400 hover:text-white transition">Health Articles</Link>
+              </li>
+              <li>
+                <Link to="/careers" className="text-gray-400 hover:text-white transition">Careers</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-400 hover:text-white transition">Contact Us</Link>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Tests & Packages */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Tests & Packages</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/tests/diabetes" className="text-gray-400 hover:text-white transition">Diabetes Tests</Link>
+              </li>
+              <li>
+                <Link to="/tests/thyroid" className="text-gray-400 hover:text-white transition">Thyroid Profile</Link>
+              </li>
+              <li>
+                <Link to="/tests/vitamin" className="text-gray-400 hover:text-white transition">Vitamin Tests</Link>
+              </li>
+              <li>
+                <Link to="/packages/full-body" className="text-gray-400 hover:text-white transition">Full Body Checkup</Link>
+              </li>
+              <li>
+                <Link to="/packages/women-health" className="text-gray-400 hover:text-white transition">Women's Health</Link>
+              </li>
+              <li>
+                <Link to="/packages/cardiac" className="text-gray-400 hover:text-white transition">Heart Checkup</Link>
+              </li>
+            </ul>
+          </div>
+          
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+            <ul className="space-y-4">
+              <li className="flex items-start">
+                <MapPin size={20} className="text-blue-400 mr-3 mt-1 flex-shrink-0" />
+                <span className="text-gray-400">
+                  MediLab Diagnostics, 123 Healthcare Avenue, New Delhi - 110001, India
+                </span>
+              </li>
+              <li className="flex items-center">
+                <Phone size={20} className="text-blue-400 mr-3 flex-shrink-0" />
+                <span className="text-gray-400">+91 1800-123-4567</span>
+              </li>
+              <li className="flex items-center">
+                <Mail size={20} className="text-blue-400 mr-3 flex-shrink-0" />
+                <span className="text-gray-400">support@medilab.com</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        {/* Download App Section */}
+        <div className="border-t border-gray-800 pt-8 pb-6 mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-6 md:mb-0">
+              <h3 className="text-lg font-semibold mb-2">Download the MediLab App</h3>
+              <p className="text-gray-400">Get exclusive offers and manage your health on the go</p>
+            </div>
+            <div className="flex space-x-4">
+              <a href="#" className="block">
+                <img src="/api/placeholder/140/45" alt="Download on App Store" className="h-12" />
+              </a>
+              <a href="#" className="block">
+                <img src="/api/placeholder/140/45" alt="Get it on Google Play" className="h-12" />
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        {/* Payment Methods */}
+        <div className="border-t border-gray-800 pt-6 pb-4 mb-4">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-sm font-medium">Accepted Payment Methods</h3>
+            </div>
+            <div className="flex space-x-3">
+              {['Visa', 'Mastercard', 'PayPal', 'GPay', 'PhonePe', 'Paytm'].map((method) => (
+                <div key={method} className="bg-gray-800 text-xs px-3 py-1 rounded">
+                  {method}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Copyright Section */}
+        <div className="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
+          <p>© {new Date().getFullYear()} MediLab Diagnostics. All rights reserved.</p>
+          <div className="mt-2 flex justify-center space-x-4">
+            <Link to="/privacy" className="hover:text-gray-300 transition">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-gray-300 transition">Terms of Service</Link>
+            <Link to="/refund" className="hover:text-gray-300 transition">Refund Policy</Link>
           </div>
         </div>
       </div>
-      
-      <div className="border-t border-gray-300 mt-8 pt-6 text-center text-sm text-gray-600">
-        &copy; 2025 Apollo 24/7. All rights reserved.
-      </div>
-    </div>
-  </footer>
+    </footer>
   );
 };
 

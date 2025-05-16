@@ -4,6 +4,7 @@ import {
   ChevronUp, Phone, Mail, MapPin, QrCode, Calendar, Clock, 
   AlertCircle, MessageSquare, Activity, ShieldCheck, Stethoscope
 } from 'lucide-react';
+import EpisodesWithVideo from '../epicode';
 
 export default function SmartHealthMembershipCards() {
   const [activeCard, setActiveCard] = useState('premium');
@@ -483,6 +484,9 @@ export default function SmartHealthMembershipCards() {
             </div>
           </div>
         </div>
+
+
+        {/* <EpisodesWithVideo/> */}
       </div>
     </div>
   );

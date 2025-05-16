@@ -1,55 +1,42 @@
+// src/pages/Medifarma/Medifarma.jsx
 import React, { useState } from 'react';
-import { Search, ShoppingCart, Clock, Truck, Shield, Phone, Mail, MapPin, ChevronDown, ChevronRight, Star, Heart, User, Menu, X } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { Search, ShoppingCart, Clock, Truck, Shield, Phone, Star, Heart, ShoppingBag, Sparkles, ChevronRight } from 'lucide-react';
+
+import HealthConditionsBrowser from '../../components/UI/HealthConditionsBrowser';
+import { addToCart } from '../../redux/slices/cartSlice';
+import { selectAllProducts, filterByCategory } from '../../redux/slices/productsSlice';
+import ApolloHealthcareNav from './medibar';
+import PopularLabTests from '../LabTests/PopularLabTests';
+import ProductCategoryDisplay from './ProductCategoryDisplay';
+
+import BannerCarousel from '../../components/UI/Banner';
+import { ValueDealsCarousel } from './ValueDeals';
+import { TopSellingProducts } from './TopSellingProducts';
+import { DiebetesManagement } from './DiebetesManagement';
+import { SkinCarebrand } from './SkinCarebrand';
+import { Miniumoff } from './Miniumoff';
+
 
 const Medifarma = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [cartCount, setCartCount] = useState(0);
 
-    const handleAddToCart = () => {
-        setCartCount(cartCount + 1);
+    const dispatch = useDispatch();
+    const products = useSelector(selectAllProducts);
+    const cartCount = useSelector(state => state.cart.totalItems);
+
+    const handleAddToCart = (product) => {
+        dispatch(addToCart(product));
     };
 
-    const categories = ['All', 'Medicines', 'Healthcare', 'Vitamins', 'Ayurveda', 'Personal Care'];
+    const handleCategoryChange = (category) => {
+        setSelectedCategory(category);
+        dispatch(filterByCategory(category));
+    };
 
-    const featuredProducts = [
-        {
-            id: 1,
-            name: 'Multivitamin Tablets',
-            price: 599,
-            discount: 699,
-            image: '/api/placeholder/200/200',
-            rating: 4.8,
-            reviews: 142,
-        },
-        {
-            id: 2,
-            name: 'Diabetes Care Kit',
-            price: 1299,
-            discount: 1499,
-            image: '/api/placeholder/200/200',
-            rating: 4.7,
-            reviews: 89,
-        },
-        {
-            id: 3,
-            name: 'Immunity Booster',
-            price: 449,
-            discount: 599,
-            image: '/api/placeholder/200/200',
-            rating: 4.5,
-            reviews: 215,
-        },
-        {
-            id: 4,
-            name: 'Protein Supplement',
-            price: 1099,
-            discount: 1299,
-            image: '/api/placeholder/200/200',
-            rating: 4.6,
-            reviews: 176,
-        },
-    ];
+
 
     const blogPosts = [
         {
@@ -76,345 +63,331 @@ const Medifarma = () => {
     ];
 
     return (
-      <div className='bg-gray-100'>
-          <div className="font-sans text-gray-800 mt-28  ">
-            {/* Top Bar */}
-            <div className="bg-blue-600 text-white py-2 px-4">
-                <div className="container mx-auto flex justify-between items-center">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1">
-                            <Phone size={16} />
-                            <span>+91 1800-123-4567</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                            <Mail size={16} />
-                            <span>support@medifarma.in</span>
+        <div className='bg-gray-100'>
+            <div className="font-sans text-gray-800 mt-4">
+                <ApolloHealthcareNav />
+
+                {/* Hero Section */}
+                <section className="z-0 relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white">
+                    {/* Decorative pill shapes in background */}
+                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+                        <div className="absolute top-10 right-20 w-32 h-16 rounded-full bg-white rotate-45"></div>
+                        <div className="absolute bottom-20 left-10 w-40 h-16 rounded-full bg-white -rotate-12"></div>
+                        <div className="absolute top-1/3 left-1/4 w-24 h-12 rounded-full bg-white rotate-45"></div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24 relative z-10">
+                        <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-12">
+                            {/* Left Content */}
+                            <div className="md:w-1/2">
+                                <div className="inline-flex items-center bg-white bg-opacity-20 rounded-full px-4 py-1.5 mb-6">
+                                    <Sparkles size={16} className="text-blue-600 mr-2" />
+                                    <span className="text-sm font-medium text-black">FIRST20 for 20% off your first order</span>
+                                </div>
+
+                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                                    Your Health, <span className="text-white">Our Priority</span>
+                                </h1>
+
+                                <p className="text-lg text-blue-50 mb-8 max-w-lg">
+                                    Get premium medicines and healthcare products delivered to your doorstep with exclusive online discounts and lightning-fast delivery.
+                                </p>
+
+                                {/* Trust Indicators */}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3">
+                                            <Shield size={16} className="text-black" />
+                                        </div>
+                                        <span className="text-sm">Genuine Products</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3">
+                                            <Truck size={16} className="text-black" />
+                                        </div>
+                                        <span className="text-sm">Fast Delivery</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-3">
+                                            <ShoppingBag size={16} className="text-black" />
+                                        </div>
+                                        <span className="text-sm">Easy Returns</span>
+                                    </div>
+                                </div>
+
+                                {/* CTA Button */}
+                                <div className="mt-6">
+                                    <button className="bg-white text-blue-600 px-8 py-4 rounded-full font-medium hover:bg-blue-50 transition-colors flex items-center shadow-lg">
+                                        Order Now
+                                        <ChevronRight size={20} className="ml-2" />
+                                    </button>
+                                    <p className="text-blue-100 text-sm mt-3">
+                                        Free shipping on orders above ₹499
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Right Content - Image with Decorative Elements */}
+                            <div className="md:w-1/2 relative">
+                                <div className="relative">
+                                    {/* Main Image with Styled Container */}
+                                    <div className="relative bg-gradient-to-br from-blue-700 to-indigo-600 p-2 rounded-2xl shadow-2xl rotate-1">
+                                        <img
+                                            src="https://cdn.dribbble.com/userupload/14829154/file/original-c8145ea435dea6f86e6c4517203bc229.png?resize=1024x768&vertical=center"
+                                            alt="Family with healthcare products"
+                                            className="rounded-xl shadow-inner w-full h-auto object-cover"
+                                        />
+
+                                        {/* Badge Overlay */}
+                                        <div className="absolute -top-6 -right-6 bg-yellow-500 text-blue-900 rounded-full w-20 h-20 flex flex-col items-center justify-center shadow-lg transform rotate-12">
+                                            <span className="text-xs font-bold">SAVE</span>
+                                            <span className="text-lg font-bold">20%</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Floating Product Card */}
+                                    <div className="absolute -left-6 bottom-12 bg-white rounded-lg shadow-lg p-3 max-w-xs hidden md:block">
+                                        <div className="flex items-center">
+                                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                                <img src="https://cdn.dribbble.com/userupload/37019428/file/original-50aa29d2fa2cee728e68f73231983c21.png?resize=728x546&vertical=center" alt="Product" className="rounded-full" />
+                                            </div>
+                                            <div className="text-left">
+                                                <h3 className="text-sm font-bold text-gray-800">Premium Vitamins</h3>
+                                                <div className="flex items-center">
+                                                    <span className="text-xs text-green-600 font-medium">₹399</span>
+                                                    <span className="text-xs text-gray-500 line-through ml-2">₹599</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Floating Rating Card */}
+                                    <div className="absolute -right-4 top-12 bg-white rounded-lg shadow-lg p-3 hidden md:block">
+                                        <div className="flex items-center space-x-1">
+                                            <div className="flex">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                ))}
+                                            </div>
+                                            <span className="text-xs font-medium text-gray-800">4.9/5 (2.5k+ reviews)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-4">
-                        <a href="#" className="text-sm hover:underline">Download App</a>
-                        <a href="#" className="text-sm hover:underline">Career</a>
-                        <a href="#" className="text-sm hover:underline">Become a Partner</a>
+
+                    {/* Bottom Wave Shape */}
+                    <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-0">
+                        <svg className="relative block w-full h-8 sm:h-12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                            <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" fill="white"></path>
+                        </svg>
                     </div>
+                </section>
+
+                {/* Features */}
+                <section className="py-12 px-4 bg-gray-50">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+                                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                                    <Truck className="text-blue-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Free Delivery</h3>
+                                    <p className="text-sm text-gray-600">On orders above ₹599</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+                                <div className="bg-green-100 p-3 rounded-full mr-4">
+                                    <Clock className="text-green-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Same Day Delivery</h3>
+                                    <p className="text-sm white">For selected locations</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+                                <div className="bg-purple-100 p-3 rounded-full mr-4">
+                                    <Shield className="text-purple-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">Genuine Products</h3>
+                                    <p className="text-sm text-white">100% authentic items</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
+                                <div className="bg-orange-100 p-3 rounded-full mr-4">
+                                    <Phone className="text-orange-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-medium">24/7 Support</h3>
+                                    <p className="text-sm white">Call us anytime</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+               
+
+                <HealthConditionsBrowser />
+                <ProductCategoryDisplay />
+
+                 <Miniumoff/>
+
+
+
+                {/* Featured Products */}
+                <section className="py-10 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold">Featured Products</h2>
+                            <Link to="/products" className="text-blue-600 flex items-center">
+                                View All <ChevronRight size={16} />
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {products.map((product) => (
+                                <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                                    <div className="p-4">
+                                        <div className="relative mb-4">
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-48 object-contain rounded-md"
+                                            />
+                                            <button
+                                                className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-50"
+                                            >
+                                                <Heart size={18} className="text-gray-500 hover:text-red-500" />
+                                            </button>
+                                        </div>
+
+                                        <div className="mb-2">
+                                            <div className="flex items-center mb-1">
+                                                <Star size={16} className="text-yellow-400 fill-current" />
+                                                <span className="text-sm ml-1">{product.rating}</span>
+                                                <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
+                                            </div>
+                                            <h3 className="font-medium">{product.name}</h3>
+                                        </div>
+
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <span className="font-bold text-lg">₹{product.price}</span>
+                                                <span className="text-gray-500 text-sm ml-2 line-through">₹{product.discount}</span>
+                                            </div>
+                                            <button
+                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
+                                                onClick={() => handleAddToCart(product)}
+                                            >
+                                                <ShoppingCart size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+                <BannerCarousel />
+                <TopSellingProducts/>
+
+                {/* Offers Banner */}
+                <section className="py-10 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 md:p-10 text-white">
+                            <div className="flex flex-col md:flex-row items-center justify-between">
+                                <div className="md:w-3/5 mb-6 md:mb-0">
+                                    <h2 className="text-2xl md:text-3xl font-bold mb-4">Get 25% off on all Ayurvedic Products</h2>
+                                    <p className="mb-6">Use code AYUR25 at checkout. Valid until April 30, 2025.</p>
+                                    <button className="bg-white text-green-600 px-6 py-3 rounded-full font-medium hover:bg-green-50 transition-colors">
+                                        Shop Now
+                                    </button>
+                                </div>
+                                <div className="md:w-2/5">
+                                    <img src="/api/placeholder/400/200" alt="Ayurvedic products" className="rounded-lg shadow-xl" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <ValueDealsCarousel />
+                <DiebetesManagement/>
+                <SkinCarebrand/>
+
+                <PopularLabTests />
+                <div className="max-w-7xl mx-auto rounded-2xl ">
+                    <img src="https://images.apollo247.in/pd-cms/cms/2023-09/Diag_Web_Desktop.jpg?tr=q-80,f-webp,w-1300,dpr-2,c-at_max" alt="bnner" srcset=""
+                        className='w-full rounded-2xl '
+                    />
+
+                </div>
+
+                <div className="max-w-7xl mx-auto rounded-2xl ">
+                    <img src="https://images.apollo247.in/images/category/threeStepsherobannerfinal.png?tr=q-80,f-webp,w-1250,dpr-1,c-at_max" alt="bnner" srcset=""
+                        className='w-full rounded-2xl '
+                    />
+
+                </div>
+
+
+
+                {/* Health Blog */}
+                <section className="py-10 px-4 bg-gray-50">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold">Health Blog</h2>
+                            <a href="#" className="text-blue-600 flex items-center">
+                                View All <ChevronRight size={16} />
+                            </a>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {blogPosts.map((post) => (
+                                <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                                    <img
+                                        src={post.image}
+                                        alt={post.title}
+                                        className="w-full h-48 object-cover"
+                                    />
+                                    <div className="p-6">
+                                        <span className="text-xs text-gray-500">{post.date}</span>
+                                        <h3 className="font-bold text-lg mt-2 mb-3">{post.title}</h3>
+                                        <p className="text-gray-600 mb-4">{post.excerpt}</p>
+                                        <a href="#" className="text-blue-600 font-medium flex items-center">
+                                            Read More <ChevronRight size={16} />
+                                        </a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Cart Link with Counter */}
+                <div className="fixed bottom-6 right-6 z-50">
+                    <Link
+                        to="/cart"
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg flex items-center justify-center"
+                    >
+                        <ShoppingCart size={24} />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                                {cartCount}
+                            </span>
+                        )}
+                    </Link>
                 </div>
             </div>
-
-          
-
-            {/* Hero Section */}
-            <section className="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-16 px-4">
-                <div className="max-w-7xl mx-auto  flex flex-col md:flex-row items-center">
-                    <div className="md:w-1/2 mb-8 md:mb-0">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Your Health, Our Priority</h1>
-                        <p className="text-lg mb-6">Get medicines delivered to your doorstep with exclusive online discounts. Use code FIRST20 for 20% off on your first order.</p>
-                        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                            <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-medium hover:bg-blue-50 transition-colors">
-                                Order Now
-                            </button>
-                            <button className="border border-white text-white px-6 py-3 rounded-full font-medium hover:bg-blue-600 transition-colors">
-                                Talk to Doctor
-                            </button>
-                        </div>
-                    </div>
-                    <div className="md:w-1/2 flex justify-center">
-                        <img src="/api/placeholder/600/400" alt="Happy family with healthcare products" className="rounded-lg shadow-xl" />
-                    </div>
-                </div>
-            </section>
-
-            {/* Features */}
-            <section className="py-12 px-4 bg-gray-50">
-                <div className="max-w-7xl mx-auto ">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
-                            <div className="bg-blue-100 p-3 rounded-full mr-4">
-                                <Truck className="text-blue-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium">Free Delivery</h3>
-                                <p className="text-sm text-gray-600">On orders above ₹599</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
-                            <div className="bg-green-100 p-3 rounded-full mr-4">
-                                <Clock className="text-green-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium">Same Day Delivery</h3>
-                                <p className="text-sm text-gray-600">For selected locations</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
-                            <div className="bg-purple-100 p-3 rounded-full mr-4">
-                                <Shield className="text-purple-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium">Genuine Products</h3>
-                                <p className="text-sm text-gray-600">100% authentic items</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-md flex items-center">
-                            <div className="bg-orange-100 p-3 rounded-full mr-4">
-                                <Phone className="text-orange-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-medium">24/7 Support</h3>
-                                <p className="text-sm text-gray-600">Call us anytime</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Category Navigation */}
-            <section className="py-10 px-4">
-                <div className="max-w-7xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                className={`px-6 py-3 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                                    }`}
-                                onClick={() => setSelectedCategory(category)}
-                            >
-                                {category}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Featured Products */}
-            <section className="py-10 px-4">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold">Featured Products</h2>
-                        <a href="#" className="text-blue-600 flex items-center">
-                            View All <ChevronRight size={16} />
-                        </a>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {featuredProducts.map((product) => (
-                            <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-                                <div className="p-4">
-                                    <div className="relative mb-4">
-                                        <img
-                                            src={product.image}
-                                            alt={product.name}
-                                            className="w-full h-48 object-contain rounded-md"
-                                        />
-                                        <button
-                                            className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-50"
-                                        >
-                                            <Heart size={18} className="text-gray-500 hover:text-red-500" />
-                                        </button>
-                                    </div>
-
-                                    <div className="mb-2">
-                                        <div className="flex items-center mb-1">
-                                            <Star size={16} className="text-yellow-400 fill-current" />
-                                            <span className="text-sm ml-1">{product.rating}</span>
-                                            <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-                                        </div>
-                                        <h3 className="font-medium">{product.name}</h3>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <span className="font-bold text-lg">₹{product.price}</span>
-                                            <span className="text-gray-500 text-sm ml-2 line-through">₹{product.discount}</span>
-                                        </div>
-                                        <button
-                                            className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
-                                            onClick={handleAddToCart}
-                                        >
-                                            <ShoppingCart size={18} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Offers Banner */}
-            <section className="py-10 px-4">
-                <div className="max-w-7xl mx-auto">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 md:p-10 text-white">
-                        <div className="flex flex-col md:flex-row items-center justify-between">
-                            <div className="md:w-3/5 mb-6 md:mb-0">
-                                <h2 className="text-2xl md:text-3xl font-bold mb-4">Get 25% off on all Ayurvedic Products</h2>
-                                <p className="mb-6">Use code AYUR25 at checkout. Valid until April 30, 2025.</p>
-                                <button className="bg-white text-green-600 px-6 py-3 rounded-full font-medium hover:bg-green-50 transition-colors">
-                                    Shop Now
-                                </button>
-                            </div>
-                            <div className="md:w-2/5">
-                                <img src="/api/placeholder/400/200" alt="Ayurvedic products" className="rounded-lg shadow-xl" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Health Blog */}
-            <section className="py-10 px-4 bg-gray-50">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold">Health Blog</h2>
-                        <a href="#" className="text-blue-600 flex items-center">
-                            View All <ChevronRight size={16} />
-                        </a>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {blogPosts.map((post) => (
-                            <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                                <img
-                                    src={post.image}
-                                    alt={post.title}
-                                    className="w-full h-48 object-cover"
-                                />
-                                <div className="p-6">
-                                    <span className="text-xs text-gray-500">{post.date}</span>
-                                    <h3 className="font-bold text-lg mt-2 mb-3">{post.title}</h3>
-                                    <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                                    <a href="#" className="text-blue-600 font-medium flex items-center">
-                                        Read More <ChevronRight size={16} />
-                                    </a>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Testimonials */}
-            <section className="py-10 px-4">
-                <div className="max-w-7xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-6 text-center">What Our Customers Say</h2>
-
-                    <div className="flex flex-col md:flex-row gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-md flex-1">
-                            <div className="flex items-center mb-4">
-                                <img src="/api/placeholder/50/50" alt="Customer" className="rounded-full w-12 h-12 mr-4" />
-                                <div>
-                                    <h4 className="font-medium">Priya Sharma</h4>
-                                    <div className="flex">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-gray-600">
-                                "I've been using Medifarma for all my medical needs for the past year. The delivery is always prompt, and the medicines are genuine. The discounts are amazing, and their customer service is exceptional. Highly recommended!"
-                            </p>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-md flex-1">
-                            <div className="flex items-center mb-4">
-                                <img src="/api/placeholder/50/50" alt="Customer" className="rounded-full w-12 h-12 mr-4" />
-                                <div>
-                                    <h4 className="font-medium">Rahul Verma</h4>
-                                    <div className="flex">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-gray-600">
-                                "As someone who takes regular medication, Medifarma has been a lifesaver. The subscription service ensures I never run out of my essentials. The app is user-friendly, and the reminders are incredibly helpful. Thank you for making healthcare so convenient!"
-                            </p>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-lg shadow-md flex-1">
-                            <div className="flex items-center mb-4">
-                                <img src="/api/placeholder/50/50" alt="Customer" className="rounded-full w-12 h-12 mr-4" />
-                                <div>
-                                    <h4 className="font-medium">Anjali Patel</h4>
-                                    <div className="flex">
-                                        {[...Array(4)].map((_, i) => (
-                                            <Star key={i} size={16} className="text-yellow-400 fill-current" />
-                                        ))}
-                                        <Star size={16} className="text-gray-300" />
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-gray-600">
-                                "I recently consulted with a doctor through Medifarma's online consultation service. The process was smooth, and the doctor was very knowledgeable. The prescription was directly sent to the app, and I received my medicines the next day. Great service overall!"
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Download App */}
-            <section className="py-10 px-4 bg-blue-600 text-white">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
-                    <div className="md:w-1/2 mb-8 md:mb-0">
-                        <h2 className="text-2xl md:text-3xl font-bold mb-4">Download Our Mobile App</h2>
-                        <p className="mb-6">Get exclusive app-only offers and manage your healthcare needs on the go. Scan the QR code or download from your app store.</p>
-                        <div className="flex space-x-4">
-                            <button className="bg-black text-white px-6 py-3 rounded-lg flex items-center">
-                                <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10.5 0.5C9.5 0.5 8.5 1 7.5 2C6.5 3 6 4.5 6 6C6 7.5 6.5 9 7.5 10C8.5 11 9.5 11.5 10.5 11.5C11.5 11.5 12.5 11 13.5 10C14.5 9 15 7.5 15 6C15 4.5 14.5 3 13.5 2C12.5 1 11.5 0.5 10.5 0.5Z" />
-                                    <path d="M3.5 17.5C3.5 14.5 6.5 12 10 12C13.5 12 16.5 14.5 16.5 17.5C16.5 18.5 16 19 15 19H5C4 19 3.5 18.5 3.5 17.5Z" />
-                                </svg>
-                                App Store
-                            </button>
-                            <button className="bg-black text-white px-6 py-3 rounded-lg flex items-center">
-                                <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M3 3V17C3 18.1 3.9 19 5 19H15C16.1 19 17 18.1 17 17V3C17 1.9 16.1 1 15 1H5C3.9 1 3 1.9 3 3ZM15 17H5V3H15V17Z" />
-                                    <path d="M10 16C10.6 16 11 15.6 11 15C11 14.4 10.6 14 10 14C9.4 14 9 14.4 9 15C9 15.6 9.4 16 10 16Z" />
-                                </svg>
-                                Google Play
-                            </button>
-                        </div>
-                    </div>
-                    <div className="md:w-1/3 flex justify-center">
-                        <img src="/api/placeholder/300/500" alt="Mobile app" className="rounded-lg shadow-xl" />
-                    </div>
-                </div>
-            </section>
-
-
-
-
-
-            
-
-
         </div>
-      </div>
-
-        
-        
- 
-
-
-
-
-
-
-    
-
-
-
-
-    
-
-   
-  );
+    );
 };
 
 export default Medifarma;
