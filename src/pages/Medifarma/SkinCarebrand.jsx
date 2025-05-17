@@ -27,7 +27,7 @@ export const SkinCarebrand = () => {
       originalPrice: 450,
       discountPrice: 399,
       discount: '11% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0553-1_1__1_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Top Seller'
     },
     {
@@ -36,7 +36,7 @@ export const SkinCarebrand = () => {
       originalPrice: 350,
       discountPrice: 315,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0552-1_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Popular'
     },
     {
@@ -54,7 +54,7 @@ export const SkinCarebrand = () => {
       originalPrice: 160,
       discountPrice: 144,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0558-1_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -63,7 +63,7 @@ export const SkinCarebrand = () => {
       originalPrice: 200,
       discountPrice: 180,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0550-1_1__2.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -72,7 +72,7 @@ export const SkinCarebrand = () => {
       originalPrice: 100,
       discountPrice: 90,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0551-1_1__1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Bestseller'
     },
     {
@@ -81,7 +81,7 @@ export const SkinCarebrand = () => {
       originalPrice: 180,
       discountPrice: 162,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0545-1_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -90,7 +90,7 @@ export const SkinCarebrand = () => {
       originalPrice: 120,
       discountPrice: 108,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/c/e/cer0559-1_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Bestseller'
     },
 

@@ -7,17 +7,7 @@ export const login = (credentials) => async (dispatch) => {
   try {
     dispatch(loginStart());
     const response = await axiosInstance.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
-    
-    // Check if response.data contains the expected properties
-    if (!response.data || !response.data.token || !response.data.user) {
-      throw new Error('Invalid response format from server');
-    }
-    
     const { token, user } = response.data;
-    
-    // Save to localStorage
-    localStorage.setItem('newMedihubToken', token);
-    localStorage.setItem('newMedihubUser', JSON.stringify(user));
     
     // Set token in axios headers for subsequent requests
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -25,8 +15,7 @@ export const login = (credentials) => async (dispatch) => {
     dispatch(loginSuccess({ token, user }));
     return { success: true };
   } catch (error) {
-    console.error('Login error:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+    const errorMessage = error.response?.data?.message || 'Login failed';
     dispatch(loginFailure(errorMessage));
     return { success: false, error: errorMessage };
   }
@@ -38,135 +27,62 @@ export const logoutUser = () => async (dispatch) => {
     // Clear token from axios headers
     delete axiosInstance.defaults.headers.common['Authorization'];
     
-    // Clear localStorage
-    localStorage.removeItem('newMedihubToken');
-    localStorage.removeItem('newMedihubUser');
-    
-    // Try to call logout endpoint, but don't wait for it to complete the logout process
-    axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT).catch(err => {
-      console.warn('Logout API call failed:', err);
-    });
-    
-    // Always dispatch logout regardless of API success
+    await axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT);
     dispatch(logout());
-    return { success: true };
   } catch (error) {
     console.error('Logout error:', error);
-    // Even if there's an error, we still want to clear local state
+    // Even if the API call fails, we still want to clear local state
     dispatch(logout());
-    return { success: false, error: error.message || 'Logout failed' };
   }
 };
 
 // Get user profile
 export const getUserProfile = () => async (dispatch) => {
   try {
-    // Check if we have a token before making the request
-    const token = localStorage.getItem('newMedihubToken');
-    if (!token) {
-      return { success: false, error: 'No authentication token found' };
-    }
-    
-    // Ensure token is set in headers
-    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    
     const response = await axiosInstance.get(API_ENDPOINTS.AUTH.PROFILE);
-    
-    // Validate response
-    if (!response.data) {
-      throw new Error('Invalid response from server');
-    }
-    
-    // Update localStorage with fresh user data
-    localStorage.setItem('newMedihubUser', JSON.stringify(response.data));
-    
     dispatch(loginSuccess({
-      token: token,
+      token: localStorage.getItem('newMedihubToken'),
       user: response.data
+      
     }));
     return { success: true };
   } catch (error) {
-    console.error('Get profile error:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch profile';
-    
-    // If we get a 401/403, the token is likely invalid, clear auth state
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      dispatch(logout());
-    }
-    
+    const errorMessage = error.response?.data?.message || 'Failed to fetch profile';
     return { success: false, error: errorMessage };
   }
 };
 
 // Check and restore authentication on page reload
 export const checkAuth = () => async (dispatch) => {
-  try {
-    const token = localStorage.getItem('newMedihubToken');
-    const userStr = localStorage.getItem('newMedihubUser');
-    
-    console.log("token", token);
-    console.log("userStr", userStr);
-    
-    if (!token) {
-      return { success: false, error: 'No token found' };
-    }
-    
+  const token = localStorage.getItem('newMedihubToken');
+  const userStr = localStorage.getItem('newMedihubUser');
+
+  console.log("token",token);
+
+
+  
+  if (token && userStr) {
     // Set authorization header for all future requests
     axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
-    let user = null;
-    
-    // Safely parse user data
     try {
-      user = userStr ? JSON.parse(userStr) : null;
-    } catch (parseError) {
-      console.error('Error parsing user data:', parseError);
-      // Clear invalid user data
-      localStorage.removeItem('newMedihubUser');
-    }
-    
-    if (user) {
       // First, restore from localStorage to avoid flickering UI
+      const user = JSON.parse(userStr);
       dispatch(restoreSession({ token, user }));
-    } else {
-      // We have a token but no valid user data
-      console.warn('Token exists but no valid user data found');
-    }
-    
-    // Verify token with backend and get fresh user data
-    try {
+      
+      // Then verify token with backend and get fresh user data
       const response = await axiosInstance.get(API_ENDPOINTS.AUTH.PROFILE);
-      
-      if (!response.data) {
-        throw new Error('Invalid response from server');
-      }
-      
-      // Update localStorage with fresh user data
-      localStorage.setItem('newMedihubUser', JSON.stringify(response.data));
-      
       dispatch(loginSuccess({
         token: token,
         user: response.data
       }));
-      
       return { success: true };
-    } catch (apiError) {
-      console.error('Token validation failed:', apiError);
-      
-      // If API call fails, clear authentication
-      localStorage.removeItem('newMedihubToken');
-      localStorage.removeItem('newMedihubUser');
-      delete axiosInstance.defaults.headers.common['Authorization'];
-      
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      // If token is invalid, clear authentication
       dispatch(logout());
-      return { 
-        success: false, 
-        error: apiError.response?.status === 401 ? 'Authentication expired' : 'Failed to validate session' 
-      };
+      return { success: false, error: 'Authentication expired' };
     }
-  } catch (error) {
-    console.error('CheckAuth unexpected error:', error);
-    dispatch(logout());
-    return { success: false, error: error.message || 'Session verification failed' };
   }
+  return { success: false, error: 'No token found' };
 };

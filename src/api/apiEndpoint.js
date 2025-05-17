@@ -1,7 +1,7 @@
 const API_ENDPOINTS = {
   AUTH: {
     LOGIN: 'api/v1/users/login',
-    PROFILE: '/api/v1/users/profile',
+    PROFILE: 'api/v1/users/profile',
   },
   USER: {
     GET_PROFILE: '/api/v1/users/profile/id',

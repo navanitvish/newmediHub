@@ -23,7 +23,7 @@ export default function LabTestsPage() {
   // State management
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPackageSlide, setCurrentPackageSlide] = useState(0);
+
   const [currentTestSlide, setCurrentTestSlide] = useState(0);
   const [currentBlogSlide, setCurrentBlogSlide] = useState(0);
   const [selectedCity, setSelectedCity] = useState('Delhi');
@@ -86,13 +86,6 @@ export default function LabTestsPage() {
     setCurrentTestSlide(Math.min(topBookedTests.length - 3, currentTestSlide + 1));
   };
 
-  const slidePackagesLeft = () => {
-    setCurrentPackageSlide(Math.max(0, currentPackageSlide - 1));
-  };
-
-  const slidePackagesRight = () => {
-    setCurrentPackageSlide(Math.min(popularPackages.length - 3, currentPackageSlide + 1));
-  };
 
   const slideBlogsLeft = () => {
     setCurrentBlogSlide(Math.max(0, currentBlogSlide - 1));
@@ -308,45 +301,6 @@ export default function LabTestsPage() {
       <section className="max-w-7xl mx-auto px-4 mt-8">
       <TestCard/>
       </section>
-
-      {/* Popular Health Packages */}
-      {/* <section className="max-w-7xl mx-auto px-4 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Popular Health Checkup Packages (45)</h2>
-          <div className="flex space-x-2">
-            <button 
-              className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 disabled:opacity-50"
-              onClick={slidePackagesLeft}
-              disabled={currentPackageSlide === 0}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button 
-              className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 disabled:opacity-50"
-              onClick={slidePackagesRight}
-              disabled={currentPackageSlide >= popularPackages.length - 3}
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {popularPackages.slice(currentPackageSlide, currentPackageSlide + 3).map((packageItem, index) => (
-            <div 
-              key={index}
-              className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center cursor-pointer hover:shadow-lg transition"
-              onClick={() => handlePackageClick(packageItem)}
-            >
-              <div className="bg-blue-50 p-3 rounded-full mb-2">
-                {packageItem.icon}
-              </div>
-              <h3 className="font-medium text-gray-800">{packageItem.name}</h3>
-              <p className="text-xs text-gray-600 text-center mt-1">{packageItem.description}</p>
-            </div>
-          ))}
-        </div>
-      </section> */}
 
       {/* Top Booked Lab Tests */}
       <section className="max-w-7xl mx-auto px-4 py-10">

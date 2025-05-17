@@ -27,7 +27,7 @@ export const Miniumoff = () => {
     originalPrice: 450,
     discountPrice: 225,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/l/o/lor0419_3.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Top Seller'
   },
   {
@@ -45,7 +45,7 @@ export const Miniumoff = () => {
     originalPrice: 160,
     discountPrice: 80,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/n/i/niv0123_2_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -54,7 +54,7 @@ export const Miniumoff = () => {
     originalPrice: 160,
     discountPrice: 80,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/L/A/LAC0550_1-AUG23_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Buy 1 Get 1'
   },
   {
@@ -72,7 +72,7 @@ export const Miniumoff = () => {
     originalPrice: 100,
     discountPrice: 50,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/g/a/gar0522_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -90,7 +90,7 @@ export const Miniumoff = () => {
     originalPrice: 120,
     discountPrice: 60,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/v/a/vas0223_2_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -99,7 +99,7 @@ export const Miniumoff = () => {
     originalPrice: 500,
     discountPrice: 250,
     discount: '50% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/J/O/JOH0081_1-AUG23_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Diabetes Care'
   }
 ];

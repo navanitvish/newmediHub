@@ -22,7 +22,7 @@ const TopBookedTests = () => {
     { 
       id: 1, 
       name: 'CBC Test (Complete Blood Count)', 
-      icon: '🔬',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Blood_Studies.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 30,
       price: 424,
       originalPrice: 565,
@@ -36,7 +36,7 @@ const TopBookedTests = () => {
     { 
       id: 2, 
       name: 'HbA1c Test (Hemoglobin A1c)', 
-      icon: '📊',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Diabetes.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 3,
       price: 550,
       originalPrice: 733,
@@ -50,7 +50,7 @@ const TopBookedTests = () => {
     { 
       id: 3, 
       name: 'FBS (Fasting Blood Sugar) Test', 
-      icon: '📈',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Diabetes.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 1,
       price: 100,
       originalPrice: 133,
@@ -64,7 +64,7 @@ const TopBookedTests = () => {
     { 
       id: 4, 
       name: 'Lipid Profile Test', 
-      icon: '🫀',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Heart.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 8,
       price: 962,
       originalPrice: 1283,
@@ -78,7 +78,7 @@ const TopBookedTests = () => {
     { 
       id: 5, 
       name: 'Liver Function Test', 
-      icon: '🫁',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Package/Default.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 12,
       price: 750,
       originalPrice: 1000,
@@ -92,7 +92,7 @@ const TopBookedTests = () => {
     { 
       id: 6, 
       name: 'Kidney Function Test', 
-      icon: '🫘',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Kidney.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       testsIncluded: 10,
       price: 850,
       originalPrice: 1133,

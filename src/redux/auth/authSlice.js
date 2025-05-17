@@ -1,13 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: (() => {
-  try {
-    return JSON.parse(localStorage.getItem('newMedihubUser'));
-  } catch (error) {
-    return null;
-  }
-})(),
+// trycat use 
+
   token: localStorage.getItem('newMedihubToken') || null,
   isAuthenticated: !!localStorage.getItem('newMedihubToken'),
   loading: false,

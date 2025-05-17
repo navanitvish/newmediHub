@@ -91,11 +91,11 @@ export const ProductCarousel = ({
                 )}
                 
                 {/* Product image */}
-                <div className="p-4 flex justify-center">
+                <div className="p-2 flex justify-center">
                   <img 
                     src={product.image} 
                     alt={product.name} 
-                    className="h-32 object-contain" 
+                    className="h-32 w-full object-cover" 
                   />
                 </div>
                 

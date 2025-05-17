@@ -27,7 +27,7 @@ export const DiebetesManagement = () => {
     originalPrice: 450,
     discountPrice: 399,
     discount: '11% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/l/o/lor0419_3.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Top Seller'
   },
   {
@@ -36,7 +36,7 @@ export const DiebetesManagement = () => {
     originalPrice: 350,
     discountPrice: 315,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/t/m/tmc0003-1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Popular'
   },
   {
@@ -45,7 +45,7 @@ export const DiebetesManagement = () => {
     originalPrice: 160,
     discountPrice: 144,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/V/I/VIC0091_1_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -54,7 +54,7 @@ export const DiebetesManagement = () => {
     originalPrice: 160,
     discountPrice: 144,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/m/a/mam0487-1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Buy 1 Get 1'
   },
   {
@@ -63,7 +63,7 @@ export const DiebetesManagement = () => {
     originalPrice: 200,
     discountPrice: 180,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0132_1-june23_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Buy 1 Get 1'
   },
   {
@@ -72,7 +72,7 @@ export const DiebetesManagement = () => {
     originalPrice: 100,
     discountPrice: 90,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/l/a/lak0731_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -81,7 +81,7 @@ export const DiebetesManagement = () => {
     originalPrice: 180,
     discountPrice: 162,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/P/O/PON0006_2-AUG23_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Buy 1 Get 1'
   },
   {
@@ -90,7 +90,7 @@ export const DiebetesManagement = () => {
     originalPrice: 120,
     discountPrice: 108,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0174_1-sep24.png?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Bestseller'
   },
   {
@@ -99,7 +99,7 @@ export const DiebetesManagement = () => {
     originalPrice: 500,
     discountPrice: 450,
     discount: '10% off',
-    image: '/api/placeholder/120/120',
+    image: 'https://images.apollo247.in/pub/media/catalog/product/v/l/vlc0346_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
     badge: 'Diabetes Care'
   }
 ];

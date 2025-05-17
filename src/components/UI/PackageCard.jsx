@@ -241,8 +241,8 @@ const Womanwellness = () => {
   const diagnosticTests = [
     {
       id: 1,
-      name: 'Women Wellness',
-      iconSrc: '/api/placeholder/40/40',
+      name: 'HB (Haemoglobin) Test',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Blood_Studies.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       originalPrice: 600,
       discountPrice: 299,
       discount: '50% off',
@@ -250,9 +250,9 @@ const Womanwellness = () => {
       tag: 'POPULAR'
   },
    {
-      id: 1,
+      id: 2,
       name: 'hairfall check ',
-      iconSrc: '/api/placeholder/40/40',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Package/Default.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       originalPrice: 600,
       discountPrice: 299,
       discount: '50% off',
@@ -260,9 +260,9 @@ const Womanwellness = () => {
       tag: 'POPULAR'
   },
    {
-      id: 1,
+      id: 3,
       name: 'THS test check ',
-      iconSrc: '/api/placeholder/40/40',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Thyroid.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       originalPrice: 600,
       discountPrice: 299,
       discount: '50% off',
@@ -270,9 +270,9 @@ const Womanwellness = () => {
       tag: 'POPULAR'
    },
     {
-      id: 1,
+      id: 4,
       name: 'HBA1c ',
-      iconSrc: '/api/placeholder/40/40',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Diabetes.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       originalPrice: 600,
       discountPrice: 299,
       discount: '50% off',
@@ -280,9 +280,19 @@ const Womanwellness = () => {
       tag: 'POPULAR'
   },
    {
-      id: 1,
+      id: 5,
       name: ' LDH test',
-      iconSrc: '/api/placeholder/40/40',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Blood_Studies.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
+      originalPrice: 600,
+      discountPrice: 299,
+      discount: '50% off',
+      reportTime: '6 hours',
+      tag: 'POPULAR'
+  },
+   {
+      id: 6,
+      name: ' Thyroid Stimulating Hormone ',
+      iconSrc: 'https://images.apollo247.in/images/diagnostics/App/Items/Test/Thyroid.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       originalPrice: 600,
       discountPrice: 299,
       discount: '50% off',

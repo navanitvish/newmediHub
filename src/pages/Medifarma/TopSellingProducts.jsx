@@ -27,7 +27,7 @@ export const TopSellingProducts = () => {
       originalPrice: 450,
       discountPrice: 399,
       discount: '11% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apa0097_1-sep2023.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Top Seller'
     },
     {
@@ -36,7 +36,7 @@ export const TopSellingProducts = () => {
       originalPrice: 350,
       discountPrice: 315,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/os/prod-media/creative-1744642607057-evion_824x412.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       badge: 'Popular'
     },
     {
@@ -45,7 +45,7 @@ export const TopSellingProducts = () => {
       originalPrice: 160,
       discountPrice: 144,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/os/prod-media/creative-1744648844529-nivea_luminous_824x412.jpg?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
       badge: 'Bestseller'
     },
     {
@@ -54,7 +54,7 @@ export const TopSellingProducts = () => {
       originalPrice: 160,
       discountPrice: 144,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apr0111_1-qwerf.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -63,7 +63,7 @@ export const TopSellingProducts = () => {
       originalPrice: 200,
       discountPrice: 180,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apa0089_1-sep2023.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -72,7 +72,7 @@ export const TopSellingProducts = () => {
       originalPrice: 100,
       discountPrice: 90,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/ape0161-1-.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Bestseller'
     },
     {
@@ -81,7 +81,7 @@ export const TopSellingProducts = () => {
       originalPrice: 180,
       discountPrice: 162,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0132_1-june23_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Buy 1 Get 1'
     },
     {
@@ -90,7 +90,7 @@ export const TopSellingProducts = () => {
       originalPrice: 120,
       discountPrice: 108,
       discount: '10% off',
-      image: '/api/placeholder/120/120',
+      image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0172_1-june23_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
       badge: 'Bestseller'
     },
 

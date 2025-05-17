@@ -78,7 +78,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`w-full top-0 z-50 transition-all duration-300 fixed ${scrolled ? 'shadow-md' : 'backdrop-blur-md'}`}>
+      <nav className={`w-full top-0 z-50  transition-all duration-300 fixed ${scrolled ? 'shadow-md' : 'backdrop-blur-md'}`}>
         <div className="w-full px-4 py-2 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
           <div className="flex items-center justify-between h-16">
             {/* Logo - Left Side */}
@@ -221,7 +221,7 @@ const Navbar = () => {
                         {getUserInitials()}
                       </div>
                       <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors hidden lg:inline">
-                        {userData?.name || 'User'}
+                        {userData?.name || 'Navneet'}
                       </span>
                       <svg
                         className={`h-4 w-4 text-gray-400 transition-transform duration-200 group-hover:text-blue-600 ${profileMenuOpen ? 'rotate-180' : ''}`}
@@ -239,7 +239,7 @@ const Navbar = () => {
                     {profileMenuOpen && (
                       <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg py-2 z-10 border border-gray-100 overflow-hidden">
                         <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-semibold text-gray-900">{userData?.name || 'User'}</p>
+                          <p className="text-sm font-semibold text-gray-900">{userData?.name || 'Navneet'}</p>
                           <p className="text-xs text-gray-500 truncate">{userData?.email || ''}</p>
                         </div>
                         <Link

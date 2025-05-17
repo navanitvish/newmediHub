@@ -122,20 +122,20 @@ const Footer = () => {
         </div>
         
         {/* Payment Methods */}
-        <div className="border-t border-gray-800 pt-6 pb-4 mb-4">
+        {/* <div className="border-t border-gray-800 pt-6 pb-4 mb-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-4 md:mb-0">
               <h3 className="text-sm font-medium">Accepted Payment Methods</h3>
             </div>
             <div className="flex space-x-3">
-              {['Visa', 'Mastercard', 'PayPal', 'GPay', 'PhonePe', 'Paytm'].map((method) => (
+              {['Visa', 'Mastercard', 'PayPal', 'GPay', 'PhonePe'].map((method) => (
                 <div key={method} className="bg-gray-800 text-xs px-3 py-1 rounded">
                   {method}
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </div> */}
         
         {/* Copyright Section */}
         <div className="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">

@@ -71,7 +71,7 @@ const EnhancedHeroSection = ( ) => {
   };
 
   return (
-    <div className="relative overflow-hidden py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="relative overflow-hidden  bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {particles}
