@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import TestimonialsSection from './TestimonialsSection';
+import DoctorSearch from './../../components/UI/DoctorSearch';
+import MedicalSpecialtiesCarousel from '../../components/UI/MedicalSpecialtiesCarousel';
+import { useGetQuery, usePostMutation } from '../../api/apiCall';
+import API_ENDPOINTS from '../../api/apiEndpoint';
 
 const DoctorPage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,177 +32,106 @@ const DoctorPage = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+ const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+    // Fetch doctor data
+  const { data: DoctorData, isLoading, error } = useGetQuery(
+    `${API_ENDPOINTS.DOCTORS.GET_ALL_DOCTOR}`
+  );
+  
+  console.log('Prescription doctor:', DoctorData);
 
-  const doctors = [
-    {
-      icons: "https://images.apollo247.in/specialty/615ebc75-4172-4f46-9ba0-b3688c053fcc-1721716587044.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "General Physician",
-      description: "Primary healthcare provider for various conditions"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/73dae7a6-ec1f-45c4-98bd-0c8acb6e4eca-1718393652685.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Obstetrics & Gynaecology",
-      description: "Women's reproductive health specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/07337088-ca54-4e67-8c53-6a5c03b07a7f-1718517850079.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Orthopaedics",
-      description: "Bone and joint specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_ent.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Neurology",
-      description: "Brain and nervous system specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_neurology.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Cardiology",
-      description: "Heart and cardiovascular system specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/d188a910-996b-4478-b014-72a8ec54312e-1718395128194.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Urology",
-      description: "Urinary tract and male reproductive specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/789b2a65-1d81-4023-92c8-39959ca8a7ed-1718393945815.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Gastroenterology",
-      description: "Digestive system specialist"
-    },
-    {
-      icons: "/api/placeholder/64/64",
-      specialty: "Psychiatry",
-      description: "Mental health and disorders specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/f00cc642-2034-4cd2-a9e7-22029fc5c8e2-1718394667647.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Pulmonology",
-      description: "Lung and respiratory system specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_paediatrics.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Endocrinology",
-      description: "Hormones and metabolism specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_neurology.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Nephrology",
-      description: "Kidney health specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_neurology.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Neurosurgery",
-      description: "Surgical treatment of nervous system disorders"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/6e8e535f-2df3-46f8-967e-1a04306c35a4-1718394797424.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Rheumatology",
-      description: "Joint, muscle, and autoimmune diseases specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/f3dcf81b-e39d-4844-a5f0-ed7192d94b1a-1718361900653.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Surgical Gastroenterology",
-      description: "Surgical treatment for GI diseases"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/cbc11a69-397f-4478-b526-ba9820f3d652-1718394144943.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Infectious Disease",
-      description: "Treatment of contagious and infectious diseases"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/6147312b-0e6b-4b2e-a20c-991243a85625-1718394692716.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "General & Laparoscopic Surgeon",
-      description: "Specialist in minimal access techniques"
-    },
-    {
-      icons: "https://images.apollo247.in/specialties/ic_ent.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Psychology",
-      description: "Specialist in mental processes and behavior"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/8ab7711b-cf37-41f8-b610-a1a4afdc49c9-1718394299540.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Medical Oncology",
-      description: "Cancer diagnosis and treatment specialist"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/556c709b-bde6-4b81-becd-3e809ec2d682-1718393677886.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Diabetology",
-      description: "Diabetes management and treatment expert"
-    },
-    {
-      icons: "https://images.apollo247.in/specialty/4ce59e16-e22b-4059-9cae-365408e34b8c-1718393604945.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max",
-      specialty: "Dentist",
-      description: "Oral health and dental care specialist"
+  useEffect(() => {
+    if (DoctorData && DoctorData.result) {
+      setDoctors(DoctorData.result);
+      setLoading(false);
     }
-  ];
+  }, [DoctorData]);
+  
+  console.log('Doctor data:', doctors);
+
+
+    // Fetch doctor data
+  const { data: TOPDoctorData } = useGetQuery(
+    `${API_ENDPOINTS.DOCTORS.Get_TOP_DOCTORS}`
+  );
+
+  const topDoctoers = TOPDoctorData?.result || [];
+
+  console.log('TOP Doctor data:', TOPDoctorData);
+
+  
+
+
+
 
   // Enhanced featured doctors data
-  const featuredDoctors = [
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      specialty: "Cardiology",
-      image: "/api/placeholder/96/96",
-      rating: 4.9,
-      reviews: 127,
-      experience: "15+ years",
-      location: "Downtown Medical Center",
-      available: true,
-      nextAvailable: "Today",
-      education: "Harvard Medical School",
-      languages: ["English", "Spanish"],
-      consultationFee: "$150",
-      specializations: ["Heart Disease", "Hypertension"]
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen",
-      specialty: "Neurology",
-      image: "/api/placeholder/96/96",
-      rating: 4.8,
-      reviews: 94,
-      experience: "12+ years",
-      location: "Central Hospital",
-      available: true,
-      nextAvailable: "Tomorrow",
-      education: "Johns Hopkins University",
-      languages: ["English", "Mandarin"],
-      consultationFee: "$180",
-      specializations: ["Migraines", "Epilepsy"]
-    },
-    {
-      id: 3,
-      name: "Dr. Priya Patel",
-      specialty: "Obstetrics & Gynaecology",
-      image: "/api/placeholder/96/96",
-      rating: 4.9,
-      reviews: 156,
-      experience: "10+ years",
-      location: "Women's Health Clinic",
-      available: false,
-      nextAvailable: "May 16",
-      education: "Stanford Medical School",
-      languages: ["English", "Hindi", "Gujarati"],
-      consultationFee: "$165",
-      specializations: ["Prenatal Care", "Fertility"]
-    },
-    {
-      id: 4,
-      name: "Dr. James Wilson",
-      specialty: "Orthopaedics",
-      image: "/api/placeholder/96/96",
-      rating: 4.7,
-      reviews: 88,
-      experience: "20+ years",
-      location: "Joint & Bone Center",
-      available: true,
-      nextAvailable: "Today",
-      education: "Mayo Medical School",
-      languages: ["English"],
-      consultationFee: "$195",
-      specializations: ["Sports Injuries", "Joint Replacement"]
-    }
-  ];
+  // const featuredDoctors = [
+  //   {
+  //     id: 1,
+  //     name: "Dr. Sarah Johnson",
+  //     specialty: "Cardiology",
+  //     image: "/api/placeholder/96/96",
+  //     rating: 4.9,
+  //     reviews: 127,
+  //     experience: "15+ years",
+  //     location: "Downtown Medical Center",
+  //     available: true,
+  //     nextAvailable: "Today",
+  //     education: "Harvard Medical School",
+  //     languages: ["English", "Spanish"],
+  //     consultationFee: "$150",
+  //     specializations: ["Heart Disease", "Hypertension"]
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Dr. Michael Chen",
+  //     specialty: "Neurology",
+  //     image: "/api/placeholder/96/96",
+  //     rating: 4.8,
+  //     reviews: 94,
+  //     experience: "12+ years",
+  //     location: "Central Hospital",
+  //     available: true,
+  //     nextAvailable: "Tomorrow",
+  //     education: "Johns Hopkins University",
+  //     languages: ["English", "Mandarin"],
+  //     consultationFee: "$180",
+  //     specializations: ["Migraines", "Epilepsy"]
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Dr. Priya Patel",
+  //     specialty: "Obstetrics & Gynaecology",
+  //     image: "/api/placeholder/96/96",
+  //     rating: 4.9,
+  //     reviews: 156,
+  //     experience: "10+ years",
+  //     location: "Women's Health Clinic",
+  //     available: false,
+  //     nextAvailable: "May 16",
+  //     education: "Stanford Medical School",
+  //     languages: ["English", "Hindi", "Gujarati"],
+  //     consultationFee: "$165",
+  //     specializations: ["Prenatal Care", "Fertility"]
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Dr. James Wilson",
+  //     specialty: "Orthopaedics",
+  //     image: "/api/placeholder/96/96",
+  //     rating: 4.7,
+  //     reviews: 88,
+  //     experience: "20+ years",
+  //     location: "Joint & Bone Center",
+  //     available: true,
+  //     nextAvailable: "Today",
+  //     education: "Mayo Medical School",
+  //     languages: ["English"],
+  //     consultationFee: "$195",
+  //     specializations: ["Sports Injuries", "Joint Replacement"]
+  //   }
+  // ];
 
   // Enhanced testimonials with more details
   const testimonials = [
@@ -446,6 +379,13 @@ const DoctorPage = () => {
         </div>
       </div>
 
+      <div className="max-w-7xl mx-auto rounded-2xl mt-16 ">
+      <img src="https://images.apollo247.in/images/consult_home/consult-home-listing/doc-banner-desktop.svg?tr=q-80,w-1300,dpr-2,c-at_max" alt="bnner" srcset=""
+        className='w-full rounded-2xl '
+      />
+
+      </div>
+
       {/* Enhanced Doctor Specialties Section with Cards */}
       <div className="max-w-7xl mx-auto mt-24 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-10">
@@ -506,6 +446,9 @@ const DoctorPage = () => {
           </div>
         </div>
       </div>
+      <MedicalSpecialtiesCarousel/>
+
+      <DoctorSearch/>
 
       {/* Enhanced Featured Doctors Section */}
       <div className="max-w-7xl mx-auto mt-24 px-4 sm:px-6 lg:px-8">
@@ -515,7 +458,7 @@ const DoctorPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredDoctors.map((doctor) => (
+          {topDoctoers.map((doctor) => (
             <div
               key={doctor.id}
               className="bg-white rounded-2xl shadow-md hover:shadow-xl p-6 transition-all duration-300 ease-in-out cursor-pointer border border-gray-100 group"
@@ -530,10 +473,10 @@ const DoctorPage = () => {
                 <button className="absolute top-0 right-0 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors">
                   <Heart size={16} className="text-red-500" />
                 </button>
-                {doctor.available && (
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Available {doctor.nextAvailable}
+
+                {doctor?.doctorId?.onLeave && (
+                  <div className="absolute top-0 left-0 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors">
+                    <Heart size={16} className="text-red-500" />
                   </div>
                 )}
               </div>
@@ -542,12 +485,18 @@ const DoctorPage = () => {
                 {doctor.name}
               </h3>
               <p className="text-sm text-gray-500 text-center mb-3">
-                {doctor.specialty}
+                {doctor?.doctorId?.specialization?.name}
               </p>
 
               <div className="flex items-center justify-center mb-3">
                 <div className="flex mr-1">
-                  {renderStars(doctor.rating)}
+                {/* // rating stars static add random */}
+
+                {Array.from({ length: 5 }, (_, index) => (
+                  <Star size={18} className="text-yellow-400" key={index} />
+                ))}
+
+                
                 </div>
                 <span className="text-sm text-gray-600">({doctor.reviews})</span>
               </div>
@@ -555,17 +504,19 @@ const DoctorPage = () => {
               <div className="flex flex-col gap-2 text-sm text-gray-600 mb-4">
                 <div className="flex items-center">
                   <Clock size={14} className="mr-2 text-gray-400" />
-                  {doctor.experience} experience
+                  {doctor?.doctorId?.experience} years of experience
                 </div>
                 <div className="flex items-center">
                   <MapPin size={14} className="mr-2 text-gray-400" />
-                  {doctor.location}
+                  {doctor?.doctorId?.address}
                 </div>
               </div>
 
+           
+
               <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between items-center">
                 <div className="text-gray-600 font-medium">
-                  <span className="text-sm">Fee:</span> <span className="text-indigo-600">{doctor.consultationFee}</span>
+                  <span className="text-sm">Fee:</span> <span className="text-indigo-600">{doctor?.doctorId?.fee}</span>
                 </div>
                 <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                   Book Now
@@ -583,6 +534,8 @@ const DoctorPage = () => {
       </div>
       {/* testimonail */}
       <TestimonialsSection />
+
+
 
 
       {/* How It Works Section */}

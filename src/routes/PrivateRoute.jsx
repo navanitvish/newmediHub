@@ -12,7 +12,7 @@ const PrivateRoute = () => {
   
   useEffect(() => {
     // Check if token exists but user is not loaded yet
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('newMedihubToken');
     if (token && !isAuthenticated && !loading) {
       dispatch(getUserProfile());
     }

@@ -36,6 +36,8 @@ import Medifarma from './pages/Medifarma/Medifarma';
 import Login from './pages/Login';
 import ProfilePage from './pages/Profile';
 import CartPages from './pages/CartPage';
+import DoctorSearchResults from './pages/Doctors/DoctorSearchResults';
+import MedicineSearch from './components/UI/MedicineSearch';
 function App() {
   const dispatch = useDispatch();
 
@@ -55,6 +57,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/doctors" element={<DoctorPage />} />
+          <Route path="/DoctorSearchResults" element={<DoctorSearchResults />} />
           <Route path="/consultation" element={<DoctorConsultationPlatform />} />
           <Route path="/labs" element={<LabTestsPage />} />
           <Route path="/cart" element={<CartPages/>} />
@@ -63,6 +66,7 @@ function App() {
 
           <Route path="/healthcard" element={<SmartHealthMembershipCards />} />
           <Route path="/medifarma" element={<Medifarma />} />
+          <Route path="/search" element={<MedicineSearch />} />
 
           {/* Uncomment the line below to use the DoctorConsultationPlatform */}
           {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}

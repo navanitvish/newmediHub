@@ -1,6 +1,8 @@
-import { useState, useRef,useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const DoctorSearch = ({onSearch}) => {
+const DoctorSearch = () => {
+    const navigate = useNavigate();
     const [showSpecialties, setShowSpecialties] = useState(false);
     const [selectedSpecialty, setSelectedSpecialty] = useState("");
     const dropdownRef = useRef(null);
@@ -11,7 +13,8 @@ const DoctorSearch = ({onSearch}) => {
     const specialties = [
         "Cardiology", "Dermatology", "Neurology", "Orthopedics",
         "Pediatrics", "Psychiatry", "Ophthalmology", "Dentistry",
-        "Gynecology", "Urology", "ENT", "Pulmonology", "Rheumatology"
+        "Gynecology", "Urology", "ENT", "Pulmonology", "Rheumatology",
+        "Anaesthesia", "Pain Management"
     ];
 
     const filteredSpecialties = specialties.filter(specialty =>
@@ -19,44 +22,49 @@ const DoctorSearch = ({onSearch}) => {
     );
 
     // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowSpecialties(false);
-      }
-    }
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowSpecialties(false);
+            }
+        }
+        
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropdownRef]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // Store search parameters in localStorage
+        const searchParams = {
+            specialty: selectedSpecialty,
+            date: selectedDate,
+            location: location
+        };
+        
+        localStorage.setItem('doctorSearchParams', JSON.stringify(searchParams));
+        
+        // Navigate to results page
+        navigate('/DoctorSearchResults');
     };
-  }, [dropdownRef]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSearch({
-      specialty: selectedSpecialty,
-      date: selectedDate,
-      location: location
-    });
-  };
-
 
     return (
-        <div className='bg-blue-100 w-full h-[250px] '>
-
-            <div className='max-w-7xl mx-auto '>
-                <h1 className='text-3xl font-bold p-4'>Find a Doctor in 3 easy steps</h1>
-                <div className=' p-4 border border-gray-300 bg-white rounded-lg shadow-md'>
-                    <form onSubmit={handleSubmit} className=' grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-center flex-col p-4  rounded-lg ' >
-
-                        <div className='mb-4'>
-                            <label className='text-lg font-semibold'>Select a Doctor</label>
+        <div className='bg-blue-100 w-full min-h-[250px] py-6'>
+            <div className='max-w-7xl mx-auto px-4'>
+                <h1 className='text-3xl font-bold pb-6'>Find a Doctor in 3 easy steps</h1>
+                <div className='p-4 border border-gray-300 bg-white rounded-lg shadow-md'>
+                    <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start p-4 rounded-lg'>
+                        <div className='mb-2'>
+                            <label className='block text-gray-700 font-semibold mb-2'>Select a Doctor</label>
                             <div className='relative' ref={dropdownRef}>
                                 <div className='w-full p-4 bg-white border border-gray-300 rounded-lg flex justify-between items-center cursor-pointer'
-                                    onClick={() => setShowSpecialties(!showSpecialties)} >
-
-                                    <span className={selectedSpecialty ? "text-gray-800" : "text-gray-500"}>  {selectedSpecialty || "Lab Report Analysis"}</span>
+                                    onClick={() => setShowSpecialties(!showSpecialties)}>
+                                    <span className={selectedSpecialty ? "text-gray-800" : "text-gray-500"}>
+                                        {selectedSpecialty || "Select Specialty"}
+                                    </span>
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
@@ -90,21 +98,13 @@ const DoctorSearch = ({onSearch}) => {
                                                     No specialties found.
                                                 </div>
                                             )}
-
-
                                         </div>
-
-
-
                                     </div>
                                 )}
-
-
                             </div>
-
                         </div>
 
-                        <div className="mb-4">
+                        <div className="mb-2">
                             <label className="block text-gray-700 font-semibold mb-2">Appointment Date</label>
                             <input
                                 type="date"
@@ -114,7 +114,7 @@ const DoctorSearch = ({onSearch}) => {
                             />
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-2">
                             <label className="block text-gray-700 font-semibold mb-2">Preferred Location/Pincode</label>
                             <input
                                 type="text"
@@ -125,21 +125,19 @@ const DoctorSearch = ({onSearch}) => {
                             />
                         </div>
 
-                        <button
-                            type="submit"
-                            className="w-full py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                        >
-                            Search Doctors
-                        </button>
-
+                        <div className="flex items-end h-full mb-2">
+                            <button
+                                type="submit"
+                                className="w-full py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                            >
+                                Search Doctors
+                            </button>
+                        </div>
                     </form>
-
                 </div>
             </div>
-
-
         </div>
-    )
-}
+    );
+};
 
-export default DoctorSearch
+export default DoctorSearch;

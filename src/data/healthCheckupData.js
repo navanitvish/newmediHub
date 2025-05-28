@@ -143,18 +143,6 @@ export const healthCategories = [
   }
 ];
 
-// Create data for other categories
-export const createDummyPackages = (categoryName, count = 4) => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `${categoryName.toLowerCase().replace(/\s+/g, '-')}-package-${i+1}`,
-    name: `${categoryName} Package ${i+1}`,
-    testsIncluded: 20 + Math.floor(Math.random() * 50),
-    offer: 'BUY 2, GET EXTRA 15% OFF!',
-    price: 1000 + Math.floor(Math.random() * 4000),
-    originalPrice: 2500 + Math.floor(Math.random() * 8000),
-    discount: '60% off'
-  }));
-};
 
 // Create package data for each category
 export const categoryPackages = {

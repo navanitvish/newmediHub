@@ -1,12 +1,86 @@
-
 import { useDispatch } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
 import { addToCart } from '../../redux/slices/cartSlice';
 
-
 export const Miniumoff = () => {
-  // This could come from a context, redux, or props
   const dispatch = useDispatch();
+
+  // Fetch offer medicines using React Query
+  const { data: apiResponse, isLoading, error } = useQuery({
+    queryKey: ['offerMedicines'],
+    queryFn: async () => {
+      const response = await fetch('https://medisewa.onrender.com/api/v1/medicines/offer');
+      if (!response.ok) {
+        throw new Error('Failed to fetch offer medicines');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Extract medicines from result array
+  const offerMedicines = apiResponse?.result || [];
+
+  // Transform API data to match component structure
+  const transformMedicineData = (medicines) => {
+    if (!medicines || !Array.isArray(medicines)) return [];
+    
+    return medicines.map((medicine) => {
+      // Get the primary image or first available image, fallback to placeholder
+      const primaryImage = medicine.images?.find(img => img.isPrimary)?.image || 
+                          medicine.images?.[0]?.image || 
+                          '/api/placeholder/120/120';
+
+      // Calculate discount price based on offer
+      let discountPrice = medicine.price;
+      let discountText = '';
+      
+      if (medicine.isOffer && medicine.offer > 0) {
+        if (medicine.offerType === 'percentage') {
+          discountPrice = medicine.price - (medicine.price * medicine.offer / 100);
+          discountText = `${medicine.offer}% off`;
+        } else if (medicine.offerType === 'fixed') {
+          discountPrice = medicine.price - medicine.offer;
+          discountText = `₹${medicine.offer} off`;
+        }
+      }
+
+      // Determine badge based on medicine properties
+      let badge = '';
+      if (medicine.isOffer && medicine.offer >= 50) {
+        badge = 'Big Offer';
+      } else if (medicine.isOffer && medicine.offer >= 30) {
+        badge = 'Great Deal';
+      } else if (medicine.isOffer) {
+        badge = 'Offer';
+      } else if (medicine.inStock) {
+        badge = 'In Stock';
+      } else if (medicine.brand?.title) {
+        badge = medicine.brand.title;
+      }
+
+      return {
+        id: medicine._id,
+        name: medicine.title,
+        originalPrice: medicine.price,
+        discountPrice: Math.round(discountPrice),
+        discount: discountText,
+        image: primaryImage,
+        badge: badge,
+        // Additional data that might be useful
+        description: medicine.description,
+        manufacturer: medicine.manufacturer,
+        unit: medicine.unit,
+        inStock: medicine.inStock,
+        category: medicine.subCategory?.title,
+        brandTitle: medicine.brand?.title,
+        sizes: medicine.size || [] // Available sizes array
+      };
+    });
+  };
+
   const handleAddToCart = (product) => {
     dispatch(addToCart({
       id: product.id,
@@ -14,103 +88,47 @@ export const Miniumoff = () => {
       price: product.discountPrice,
       image: product.image,
       quantity: 1
-
     }));
   };
 
-  
-  // Different set of products
- const topSellingProducts = [
-  {
-    id: 101,
-    name: 'Premium Multivitamins, 30 tablets',
-    originalPrice: 450,
-    discountPrice: 225,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/l/o/lor0419_3.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Top Seller'
-  },
-  {
-    id: 102,
-    name: 'Calcium & Vitamin D3 Supplements, 60 tablets',
-    originalPrice: 350,
-    discountPrice: 175,
-    discount: '50% off',
-    image: '/api/placeholder/120/120',
-    badge: 'Popular'
-  },
-  {
-    id: 103,
-    name: 'Life Premium Citrus Refreshing Wet Wipes, 60 count',
-    originalPrice: 160,
-    discountPrice: 80,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/n/i/niv0123_2_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Bestseller'
-  },
-  {
-    id: 104,
-    name: 'Life Aloe Vera Skin Care Gel, 200 gm (2×100 gm)',
-    originalPrice: 160,
-    discountPrice: 80,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/L/A/LAC0550_1-AUG23_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Buy 1 Get 1'
-  },
-  {
-    id: 105,
-    name: 'Essentials Sandal Soap, 250 gm (2×125 gm)',
-    originalPrice: 200,
-    discountPrice: 100,
-    discount: '50% off',
-    image: '/api/placeholder/120/120',
-    badge: 'Buy 1 Get 1'
-  },
-  {
-    id: 106,
-    name: 'Pharmacy ORS Orange Flavour Drink, 200ml',
-    originalPrice: 100,
-    discountPrice: 50,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/g/a/gar0522_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Bestseller'
-  },
-  {
-    id: 107,
-    name: 'Multivitamin Tablets, 100 count',
-    originalPrice: 180,
-    discountPrice: 90,
-    discount: '50% off',
-    image: '/api/placeholder/120/120',
-    badge: 'Buy 1 Get 1'
-  },
-  {
-    id: 108,
-    name: 'Hand Sanitizer, 100ml',
-    originalPrice: 120,
-    discountPrice: 60,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/v/a/vas0223_2_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Bestseller'
-  },
-  {
-    id: 109,
-    name: 'Sugar-Free Diabetes Care Tablets, 60 count',
-    originalPrice: 500,
-    discountPrice: 250,
-    discount: '50% off',
-    image: 'https://images.apollo247.in/pub/media/catalog/product/J/O/JOH0081_1-AUG23_1.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-    badge: 'Diabetes Care'
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
-];
 
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="text-red-600 text-center">
+          <p>Failed to load offer medicines</p>
+          <p className="text-sm text-gray-500">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
 
-  
+  // Transform the fetched data
+  const transformedProducts = transformMedicineData(offerMedicines);
+
+  // Filter products that have actual offers (minimum 50% off as per component name)
+  const minimumOffProducts = transformedProducts.filter(product => {
+    if (product.discount.includes('%')) {
+      const discountPercentage = parseInt(product.discount.replace('% off', ''));
+      return discountPercentage >= 50;
+    }
+    return product.discount !== '';
+  });
+
   return (
     <ProductCarousel
-      title="Miniumum 50 % Off"
-      viewAllLink="#top-selling"
-      products={topSellingProducts}
+      title="Minimum 50% Off"
+      viewAllLink="#minimum-off"
+      products={minimumOffProducts.length > 0 ? minimumOffProducts : transformedProducts}
       onAddToCart={handleAddToCart}
     />
   );

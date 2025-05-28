@@ -11,13 +11,14 @@ import {  popularPackages, topBookedTests, healthBlogs } from '../../data/testDa
 
 import PackageCard from '../../components/UI/PackageCard';
 import ImageCarousel from '../../components/UI/ImageCarousel';
-import HealthCheckup from '../../pages/Healthcheckup';
+// import HealthCheckup from '../../pages/Healthcheckup';
 import TestCard from '../../components/UI/TestCard';
 import DiagnosticTests from './DiagnosticTests';
 import TopBookedTests from './topBookedTests';
-import HealthCheckupPackages from './HealthCheckup';
+// import HealthCheckupPackages from './HealthCheckup';
 import HealthCheckups from './HealthCheckup';
 import Womanwellness from '../../components/UI/PackageCard';
+import TestCardsSlider from './topbokedtest';
 
 export default function LabTestsPage() {
   // State management
@@ -266,7 +267,7 @@ export default function LabTestsPage() {
    
 
     <section className="max-w-7xl mx-auto px-4 mt-8">
-   <HealthCheckup/>
+   {/* <HealthCheckup/> */}
     </section>
 
 
@@ -277,6 +278,8 @@ export default function LabTestsPage() {
          <section className="max-w-7xl mx-auto px-4 mt-8">
          <HealthCheckups/>
       </section>
+
+      {/* <TestCardsSlider/> */}
 
       {/* Health Categories */}
       <section className="max-w-7xl mx-auto px-4 py-10">

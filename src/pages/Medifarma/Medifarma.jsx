@@ -9,7 +9,6 @@ import { addToCart } from '../../redux/slices/cartSlice';
 import { selectAllProducts, filterByCategory } from '../../redux/slices/productsSlice';
 import ApolloHealthcareNav from './medibar';
 import PopularLabTests from '../LabTests/PopularLabTests';
-import ProductCategoryDisplay from './ProductCategoryDisplay';
 
 import BannerCarousel from '../../components/UI/Banner';
 import { ValueDealsCarousel } from './ValueDeals';
@@ -17,11 +16,18 @@ import { TopSellingProducts } from './TopSellingProducts';
 import { DiebetesManagement } from './DiebetesManagement';
 import { SkinCarebrand } from './SkinCarebrand';
 import { Miniumoff } from './Miniumoff';
+import { nav } from 'framer-motion/client';
+import { useNavigate } from 'react-router-dom';
+import Brand from './brand';
+import PharmaciesNearYou from './PharmaciesNearYou';
+
+
 
 
 const Medifarma = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const navigate = useNavigate();
 
     const dispatch = useDispatch();
     const products = useSelector(selectAllProducts);
@@ -34,6 +40,10 @@ const Medifarma = () => {
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
         dispatch(filterByCategory(category));
+    };
+
+    const handlesearch = () => {
+        navigate('/search');
     };
 
 
@@ -117,8 +127,8 @@ const Medifarma = () => {
 
                                 {/* CTA Button */}
                                 <div className="mt-6">
-                                    <button className="bg-white text-blue-600 px-8 py-4 rounded-full font-medium hover:bg-blue-50 transition-colors flex items-center shadow-lg">
-                                        Order Now
+                                    <button onClick={handlesearch} className="bg-white text-blue-600 px-8 py-4 rounded-full font-medium hover:bg-blue-50 transition-colors flex items-center shadow-lg">
+                                       Search
                                         <ChevronRight size={20} className="ml-2" />
                                     </button>
                                     <p className="text-blue-100 text-sm mt-3">
@@ -236,68 +246,16 @@ const Medifarma = () => {
                
 
                 <HealthConditionsBrowser />
-                <ProductCategoryDisplay />
 
                  <Miniumoff/>
 
+           
 
 
-                {/* Featured Products */}
-                <section className="py-10 px-4">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold">Featured Products</h2>
-                            <Link to="/products" className="text-blue-600 flex items-center">
-                                View All <ChevronRight size={16} />
-                            </Link>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {products.map((product) => (
-                                <div key={product.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-                                    <div className="p-4">
-                                        <div className="relative mb-4">
-                                            <img
-                                                src={product.image}
-                                                alt={product.name}
-                                                className="w-full h-48 object-contain rounded-md"
-                                            />
-                                            <button
-                                                className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md hover:bg-gray-50"
-                                            >
-                                                <Heart size={18} className="text-gray-500 hover:text-red-500" />
-                                            </button>
-                                        </div>
-
-                                        <div className="mb-2">
-                                            <div className="flex items-center mb-1">
-                                                <Star size={16} className="text-yellow-400 fill-current" />
-                                                <span className="text-sm ml-1">{product.rating}</span>
-                                                <span className="text-xs text-gray-500 ml-1">({product.reviews})</span>
-                                            </div>
-                                            <h3 className="font-medium">{product.name}</h3>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <span className="font-bold text-lg">₹{product.price}</span>
-                                                <span className="text-gray-500 text-sm ml-2 line-through">₹{product.discount}</span>
-                                            </div>
-                                            <button
-                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
-                                                onClick={() => handleAddToCart(product)}
-                                            >
-                                                <ShoppingCart size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
                 <BannerCarousel />
                 <TopSellingProducts/>
+
+                <Brand />
 
                 {/* Offers Banner */}
                 <section className="py-10 px-4">
@@ -338,7 +296,7 @@ const Medifarma = () => {
                 </div>
 
 
-
+<PharmaciesNearYou/>
                 {/* Health Blog */}
                 <section className="py-10 px-4 bg-gray-50">
                     <div className="max-w-7xl mx-auto">
