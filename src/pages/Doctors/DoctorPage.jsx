@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {testimonials} from '../../data/Testimonial'
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -137,24 +137,7 @@ const DoctorPage = () => {
   }, []);
 
   // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? totalCards - visibleCardsCount : prevIndex - 1
-    );
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === totalCards - visibleCardsCount ? 0 : prevIndex + 1
-    );
-  };
+  
 
   // Handle click on a specialty card
   const handleSpecialtyClick = (specialty) => {
