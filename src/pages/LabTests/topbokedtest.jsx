@@ -1,17 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import { useGetQuery } from '../../api/apiCall';
-import API_ENDPOINTS from '../../api/apiEndpoint';
+import { useQuery } from '@tanstack/react-query';
 
-export default function TestCardsSlider() {
+export default function TopBookedTests() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const sliderRef = useRef(null);
 
-  // Fetch data from API
-  const { data: topLabBookedData, isLoading } = useGetQuery(
-    `${API_ENDPOINTS.LAB.GET_TOP_BOOKED}`
-  );
+  // Fetch data using React Query
+  const { data: topLabBookedData, isLoading, error } = useQuery({
+    queryKey: ['topMustLab'],
+    queryFn: async () => {
+      const response = await fetch('https://medisewa.onrender.com/api/v1/labs/topMustLab');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
 
   // Handle API response which returns a single result object
   // Transform it into an array for rendering
@@ -23,6 +31,14 @@ export default function TestCardsSlider() {
     return (
       <div className="flex justify-center items-center h-40">
         <span className="text-gray-500">Loading...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <span className="text-red-500">Error loading data: {error.message}</span>
       </div>
     );
   }

@@ -86,7 +86,7 @@ export default function CategoryDetailsPage({ category, packages, mustHaveTests,
                       <span className="text-xs text-green-600">{pkg.discount}</span>
                     </div>
                   </div>
-                  <button className="bg-teal-700 text-white rounded px-4 py-1 hover:bg-teal-800">
+                  <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl transition duration-300">
                     Add
                   </button>
                 </div>

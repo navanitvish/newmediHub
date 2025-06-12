@@ -15,10 +15,12 @@ import ImageCarousel from '../../components/UI/ImageCarousel';
 import TestCard from '../../components/UI/TestCard';
 import DiagnosticTests from './DiagnosticTests';
 import TopBookedTests from './topBookedTests';
-// import HealthCheckupPackages from './HealthCheckup';
+import HealthCheckupPackages from './HealthCheckup';
 import HealthCheckups from './HealthCheckup';
 import Womanwellness from '../../components/UI/PackageCard';
-import TestCardsSlider from './topbokedtest';
+
+import HealthCategoriesPage from './HealthCategoriesPage';
+
 
 export default function LabTestsPage() {
   // State management
@@ -267,7 +269,8 @@ export default function LabTestsPage() {
    
 
     <section className="max-w-7xl mx-auto px-4 mt-8">
-   {/* <HealthCheckup/> */}
+    <HealthCategoriesPage/>
+
     </section>
 
 

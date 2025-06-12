@@ -1,7 +1,7 @@
 // File: src/pages/CartPage.js
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   selectCartItems, 
   selectCartTotalAmount,
@@ -14,8 +14,14 @@ import { ArrowLeft, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 
 const CartPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cartItems = useSelector(selectCartItems);
   const totalAmount = useSelector(selectCartTotalAmount);
+  
+  const handleCheckout = () => {
+    // Navigate to checkout page
+    navigate('/checkout');
+  };
   
   if (cartItems.length === 0) {
     return (
@@ -176,7 +182,7 @@ const CartPage = () => {
             
             <button 
               className="bg-blue-600 text-white w-full py-3 rounded-md font-medium hover:bg-blue-700 transition"
-              onClick={() => alert("Proceeding to checkout")}
+              onClick={handleCheckout}
             >
               Proceed to Checkout
             </button>

@@ -161,7 +161,7 @@ const EnhancedHeroSection = ( ) => {
                 >
                   <Link
                     to="/appointment"
-                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 md:py-4 md:text-lg md:px-10 transition-all duration-300"
+                    className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                   >
                     Book Appointment
                   </Link>

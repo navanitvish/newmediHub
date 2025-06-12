@@ -38,6 +38,10 @@ import ProfilePage from './pages/Profile';
 import CartPages from './pages/CartPage';
 import DoctorSearchResults from './pages/Doctors/DoctorSearchResults';
 import MedicineSearch from './components/UI/MedicineSearch';
+import CategoryPage from './pages/LabTests/CategoryPage';
+import DoctorBookingModal from './components/UI/DoctorBookingModal';
+import CheckoutPage from './pages/CheckoutPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 function App() {
   const dispatch = useDispatch();
 
@@ -51,46 +55,49 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes with main layout */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/doctors" element={<DoctorPage />} />
-          <Route path="/DoctorSearchResults" element={<DoctorSearchResults />} />
-          <Route path="/consultation" element={<DoctorConsultationPlatform />} />
-          <Route path="/labs" element={<LabTestsPage />} />
-          <Route path="/cart" element={<CartPages/>} />
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes with main layout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/doctors" element={<DoctorPage />} />
+            <Route path="/DoctorSearchResults" element={<DoctorSearchResults />} />
+            <Route path="/consultation/:specialtyId" element={<DoctorConsultationPlatform />} />
+            <Route path="/booking/:doctorId" element={<DoctorBookingModal />} />
+            <Route path="/labs" element={<LabTestsPage />} />
+            <Route path="/cart" element={<CartPages />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route path="/category/:categoryId" element={<CategoryPage />} />
 
-          
 
-          <Route path="/healthcard" element={<SmartHealthMembershipCards />} />
-          <Route path="/medifarma" element={<Medifarma />} />
-          <Route path="/search" element={<MedicineSearch />} />
+            <Route path="/healthcard" element={<SmartHealthMembershipCards />} />
+            <Route path="/medifarma" element={<Medifarma />} />
+            <Route path="/search" element={<MedicineSearch />} />
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/*
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/*
           <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} />
 
           <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} />
@@ -101,35 +108,35 @@ function App() {
           {/* Private routes */}
 
 
-          {/* labtest */}
-      
-          {/* <Route path="/labtest/:id" element={<LabTestDetails />} /> */}
+            {/* labtest */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* <Route path="/labtest/:id" element={<LabTestDetails />} /> */}
 
-          {/* Uncomment the line below to use the DoctorConsultationPlatform */}
-          {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
+
+            {/* Uncomment the line below to use the DoctorConsultationPlatform */}
+            {/* <Route path="/doctor-consultation" element={<DoctorConsultationPlatform />} /> */}
 
 
-          <Route element={<PrivateRoute />}>
-            <Route path="/appointment" element={<AppointmentForm />} />
-            <Route path="/helpcenter" element={<HelpCenter />} />
+            <Route element={<PrivateRoute />}>
+              <Route path="/appointment" element={<AppointmentForm />} />
+              <Route path="/helpcenter" element={<HelpCenter />} />
 
-            <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Auth routes */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<Login />} />
+          {/* Auth routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
 
-        </Route>
+          </Route>
 
-        {/* 404 page */}
-        {/* <Route path="*" element={<NotFound />} /> */}
-      </Routes>
-    </BrowserRouter>
+          {/* 404 page */}
+          {/* <Route path="*" element={<NotFound />} /> */}
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

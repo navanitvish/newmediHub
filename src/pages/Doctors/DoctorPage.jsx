@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {testimonials} from '../../data/testimonial.js'
 import {
   ChevronLeft,
   ChevronRight,
@@ -65,104 +66,9 @@ const DoctorPage = () => {
 
 
 
-  // Enhanced featured doctors data
-  // const featuredDoctors = [
-  //   {
-  //     id: 1,
-  //     name: "Dr. Sarah Johnson",
-  //     specialty: "Cardiology",
-  //     image: "/api/placeholder/96/96",
-  //     rating: 4.9,
-  //     reviews: 127,
-  //     experience: "15+ years",
-  //     location: "Downtown Medical Center",
-  //     available: true,
-  //     nextAvailable: "Today",
-  //     education: "Harvard Medical School",
-  //     languages: ["English", "Spanish"],
-  //     consultationFee: "$150",
-  //     specializations: ["Heart Disease", "Hypertension"]
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Dr. Michael Chen",
-  //     specialty: "Neurology",
-  //     image: "/api/placeholder/96/96",
-  //     rating: 4.8,
-  //     reviews: 94,
-  //     experience: "12+ years",
-  //     location: "Central Hospital",
-  //     available: true,
-  //     nextAvailable: "Tomorrow",
-  //     education: "Johns Hopkins University",
-  //     languages: ["English", "Mandarin"],
-  //     consultationFee: "$180",
-  //     specializations: ["Migraines", "Epilepsy"]
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Dr. Priya Patel",
-  //     specialty: "Obstetrics & Gynaecology",
-  //     image: "/api/placeholder/96/96",
-  //     rating: 4.9,
-  //     reviews: 156,
-  //     experience: "10+ years",
-  //     location: "Women's Health Clinic",
-  //     available: false,
-  //     nextAvailable: "May 16",
-  //     education: "Stanford Medical School",
-  //     languages: ["English", "Hindi", "Gujarati"],
-  //     consultationFee: "$165",
-  //     specializations: ["Prenatal Care", "Fertility"]
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Dr. James Wilson",
-  //     specialty: "Orthopaedics",
-  //     image: "/api/placeholder/96/96",
-  //     rating: 4.7,
-  //     reviews: 88,
-  //     experience: "20+ years",
-  //     location: "Joint & Bone Center",
-  //     available: true,
-  //     nextAvailable: "Today",
-  //     education: "Mayo Medical School",
-  //     languages: ["English"],
-  //     consultationFee: "$195",
-  //     specializations: ["Sports Injuries", "Joint Replacement"]
-  //   }
-  // ];
-
+ 
   // Enhanced testimonials with more details
-  const testimonials = [
-    {
-      id: 1,
-      name: "Jessica Thompson",
-      specialty: "Cardiology Patient",
-      avatar: "/api/placeholder/48/48",
-      rating: 5,
-      text: "The online appointment booking was so convenient. Dr. Johnson was thorough and took the time to explain everything clearly. She answered all my questions about my heart condition and created a treatment plan that perfectly fits my lifestyle. Highly recommend!",
-      date: "April 2025"
-    },
-    {
-      id: 2,
-      name: "Robert Garcia",
-      specialty: "Orthopaedic Patient",
-      avatar: "/api/placeholder/48/48",
-      rating: 5,
-      text: "I was nervous about my knee surgery, but Dr. Wilson and his team made me feel comfortable throughout the process. The follow-up care was excellent, and my recovery has been faster than expected. The physical therapy recommendations were spot-on.",
-      date: "March 2025"
-    },
-    {
-      id: 3,
-      name: "Aisha Williams",
-      specialty: "Neurology Patient",
-      avatar: "/api/placeholder/48/48",
-      rating: 5,
-      text: "The telehealth consultation saved me so much time. Dr. Chen diagnosed my condition accurately and the prescribed treatment worked perfectly. He explained the complex neurological terms in a way that was easy to understand. Would definitely consult again.",
-      date: "May 2025"
-    }
-  ];
+  
 
   // Common stats for the stats section
   const stats = [
@@ -386,67 +292,11 @@ const DoctorPage = () => {
 
       </div>
 
-      {/* Enhanced Doctor Specialties Section with Cards */}
-      <div className="max-w-7xl mx-auto mt-24 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-10">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Medical Specialties</h2>
-            <p className="text-gray-600">Find the right specialist for your specific health needs</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handlePrev}
-              className="bg-white rounded-full p-3 shadow-md hover:shadow-lg hover:bg-indigo-50 transition-all duration-300"
-              aria-label="Previous specialty"
-            >
-              <ChevronLeft size={20} className="text-indigo-600" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="bg-white rounded-full p-3 shadow-md hover:shadow-lg hover:bg-indigo-50 transition-all duration-300"
-              aria-label="Next specialty"
-            >
-              <ChevronRight size={20} className="text-indigo-600" />
-            </button>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden">
-          <div
-            className="flex gap-6 transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${currentIndex * (100 / visibleCardsCount)}%)`,
-            }}
-          >
-            {filteredSpecialties.map((doctor, index) => (
-              <div
-                key={index}
-                className=" rounded-2xl  hover:shadow-xl flex-shrink-0 transform transition-all duration-300 ease-in-out cursor-pointer border border-gray-100"
-                style={{
-                  width: `calc(${100 / visibleCardsCount}% - ${(visibleCardsCount - 1) * 24 / visibleCardsCount}px)`
-                }}
-                onMouseEnter={() => setHoveredId(index)}
-                onMouseLeave={() => setHoveredId(null)}
-                onClick={() => handleSpecialtyClick(doctor.specialty)}
-              >
-                <div className="p-6 flex flex-col items-center text-center h-full">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition-colors">
-                    <img src={doctor.icons} alt="" className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {doctor.specialty}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {doctor.description}
-                  </p>
-
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <MedicalSpecialtiesCarousel/>
+     
+     <div className="max-w-7xl mx-auto mt-16 px-4 sm:px-6 lg:px-8  mb-8">
+<MedicalSpecialtiesCarousel/>
+     </div>
+      
 
       <DoctorSearch/>
 
@@ -510,18 +360,14 @@ const DoctorPage = () => {
                   <MapPin size={14} className="mr-2 text-gray-400" />
                   {doctor?.doctorId?.address}
                 </div>
+                 <div className="text-gray-600 font-medium">
+                  <span className="text-sm">Fee:</span> <span className="text-indigo-600">{doctor?.doctorId?.fee}</span>
+                </div>
               </div>
 
            
 
-              <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between items-center">
-                <div className="text-gray-600 font-medium">
-                  <span className="text-sm">Fee:</span> <span className="text-indigo-600">{doctor?.doctorId?.fee}</span>
-                </div>
-                <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                  Book Now
-                </button>
-              </div>
+             
             </div>
           ))}
         </div>
@@ -587,190 +433,7 @@ const DoctorPage = () => {
         </div>
       </div>
 
-      {/* Doctor Booking Modal */}
-      {showModal && selectedDoctor && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setShowModal(false)}></div>
-            </div>
-
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-              <div className="absolute top-0 right-0 pt-4 pr-4">
-                <button
-                  type="button"
-                  className="bg-white rounded-full p-2 hover:bg-gray-50"
-                  onClick={() => setShowModal(false)}
-                >
-                  <span className="sr-only">Close</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="flex flex-col md:flex-row">
-                {/* Doctor Info Side */}
-                <div className="md:w-1/3 bg-indigo-50 p-6">
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={selectedDoctor.image}
-                      alt={selectedDoctor.name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
-                    />
-                    <h3 className="mt-4 text-xl font-bold text-gray-800">{selectedDoctor.name}</h3>
-                    <p className="text-indigo-600 font-medium">{selectedDoctor.specialty}</p>
-
-                    <div className="flex items-center mt-2">
-                      <div className="flex mr-1">
-                        {renderStars(selectedDoctor.rating)}
-                      </div>
-                      <span className="text-sm text-gray-600">({selectedDoctor.reviews})</span>
-                    </div>
-
-                    <div className="w-full mt-6 space-y-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Award className="h-5 w-5 mr-3 text-indigo-500" />
-                        <div>
-                          <span className="font-medium text-gray-900">Experience</span>
-                          <p>{selectedDoctor.experience}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-600">
-                        <MapPin className="h-5 w-5 mr-3 text-indigo-500" />
-                        <div>
-                          <span className="font-medium text-gray-900">Location</span>
-                          <p>{selectedDoctor.location}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Info className="h-5 w-5 mr-3 text-indigo-500" />
-                        <div>
-                          <span className="font-medium text-gray-900">Education</span>
-                          <p>{selectedDoctor.education}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-600">
-                        <CheckCircle className="h-5 w-5 mr-3 text-indigo-500" />
-                        <div>
-                          <span className="font-medium text-gray-900">Specializes in</span>
-                          <p>{selectedDoctor.specializations.join(", ")}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center text-sm text-gray-600">
-                        <div className="h-5 w-5 mr-3 flex items-center justify-center text-indigo-500">
-                          <span className="font-bold">$</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-900">Consultation Fee</span>
-                          <p>{selectedDoctor.consultationFee}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Booking Side */}
-                <div className="md:w-2/3 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Book an Appointment</h3>
-
-                  {/* Appointment Type Selection */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Select Appointment Type
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {appointmentTypes.map((type) => (
-                        <div
-                          key={type.id}
-                          className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors relative"
-                        >
-                          <div className="flex items-center">
-                            <div className="mr-3 text-indigo-600">
-                              {type.icon}
-                            </div>
-                            <span className="font-medium">{type.name}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Calendar Section */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Select Date
-                    </label>
-                    <div className="border border-gray-200 rounded-lg p-4">
-                      {/* Calendar would go here - simplified for this example */}
-                      <div className="grid grid-cols-7 gap-1 text-center">
-                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
-                          <div key={idx} className="text-xs font-medium text-gray-500 py-1">{day}</div>
-                        ))}
-                        {Array(31).fill(0).map((_, idx) => {
-                          const day = idx + 1;
-                          const isToday = day === 14;
-                          const isSelected = day === 15;
-                          const isAvailable = day >= 14;
-
-                          return (
-                            <div
-                              key={day}
-                              className={`
-                                py-2 rounded-full text-sm mx-1
-                                ${isSelected ? 'bg-indigo-600 text-white' : ''}
-                                ${isToday ? 'border border-indigo-500 text-indigo-800' : ''}
-                                ${isAvailable ? 'cursor-pointer hover:bg-indigo-100' : 'text-gray-300'}
-                              `}
-                            >
-                              {day}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Time Slots */}
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Select Time
-                    </label>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {timeSlots.map((time, idx) => (
-                        <div
-                          key={idx}
-                          className="border border-gray-200 rounded-lg p-2 text-center text-sm cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
-                        >
-                          {time}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Booking Button */}
-                  <div className="mt-8">
-                    <button
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      Confirm Booking
-                    </button>
-                    <p className="text-xs text-gray-500 text-center mt-3">
-                      By confirming this booking, you agree to our terms of service and privacy policy
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
       {/* CTA Section */}
       <div className="bg-indigo-600 text-white py-16 mt-20">
