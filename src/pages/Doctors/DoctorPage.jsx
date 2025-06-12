@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {testimonials} from '/src/data/testimonial.js'
+import {testimonials} from '../../data/Testimonial'
 import {
   ChevronLeft,
   ChevronRight,
