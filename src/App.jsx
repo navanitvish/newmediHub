@@ -25,6 +25,7 @@ const CategoryPage = lazy(() => import('./pages/LabTests/CategoryPage'));
 const DoctorBookingModal = lazy(() => import('./components/UI/DoctorBookingModal'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
+import LabTestsPage from './pages/LabTests/Labtests';
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -18,7 +18,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
-import TestimonialsSection from './TestimonialsSection';
+
 import DoctorSearch from './../../components/UI/DoctorSearch';
 import MedicalSpecialtiesCarousel from '../../components/UI/MedicalSpecialtiesCarousel';
 import { useGetQuery, usePostMutation } from '../../api/apiCall';
@@ -29,7 +29,7 @@ const DoctorPage = () => {
   const [hoveredId, setHoveredId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
+
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
@@ -137,8 +137,7 @@ const DoctorPage = () => {
   }, []);
 
   // Auto-rotate testimonials
-  
-
+ 
   // Handle click on a specialty card
   const handleSpecialtyClick = (specialty) => {
     // Navigate to the consultation page with the selected specialty
@@ -361,8 +360,7 @@ const DoctorPage = () => {
           </button>
         </div>
       </div>
-      {/* testimonail */}
-      <TestimonialsSection />
+     
 
 
 
