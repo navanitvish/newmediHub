@@ -4,7 +4,11 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../../redux/slices/cartSlice';
 import { 
   ChevronRight, ChevronLeft, Upload, FileText, Search, 
-  Calendar, MapPin, Activity, ShieldCheck, Clock, Award, User 
+  Calendar, MapPin, Activity, ShieldCheck, Clock, Award, User , Heart,
+  Thermometer,
+  Droplet,
+  ShieldPlus,
+  Syringe,
 } from 'lucide-react';
 
 import {  popularPackages, topBookedTests, healthBlogs } from '../../data/testData';
@@ -119,16 +123,16 @@ export default function LabTestsPage() {
   };
 
   // Health condition categories
-  const healthCategories = [
-    { id: 1, name: "Diabetes", icon: "🩸" },
-    { id: 2, name: "Thyroid", icon: "🦋" },
-    { id: 3, name: "Full Body Checkup", icon: "👤" },
-    { id: 4, name: "Fever", icon: "🤒" },
-    { id: 5, name: "Heart", icon: "❤️" },
-    { id: 6, name: "Women's Health", icon: "👩" },
-    { id: 7, name: "Men's Health", icon: "👨" },
-    { id: 8, name: "Covid-19", icon: "🦠" }
-  ];
+ const healthCategories = [
+  { id: 1, name: "Diabetes", icon: <Droplet size={20} /> },
+  { id: 2, name: "Thyroid", icon: <ShieldPlus size={20} /> },
+  { id: 3, name: "Full Body Checkup", icon: <User size={20} /> },
+  { id: 4, name: "Fever", icon: <Thermometer size={20} /> },
+  { id: 5, name: "Heart", icon: <Heart size={20} color="red" /> },
+  { id: 6, name: "Women's Health", icon: <Syringe size={20} /> },
+  { id: 7, name: "Men's Health", icon: <FileText size={20} /> },
+  { id: 8, name: "Covid-19", icon: <Thermometer size={20} /> }
+];
 
   return (
     <div className=" bg-gray-50">
@@ -420,35 +424,7 @@ export default function LabTestsPage() {
 
       </div>
 
-      {/* User Testimonials */}
-      {/* <section className=" py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-8 text-center">What Our Customers Say</h2>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl p-6 shadow-sm">
-                <div className="flex items-center text-yellow-400 mb-3">
-                  {'★★★★★'.split('').map((star, idx) => (
-                    <span key={idx}>{star}</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4">
-                  "The experience with HealthLabs was excellent. The phlebotomist was on time, very professional, and the 
-                  reports were delivered within the promised timeframe. Will definitely use their services again."
-                </p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full mr-3"></div>
-                  <div>
-                    <h4 className="font-medium text-gray-800">Customer {i}</h4>
-                    <p className="text-xs text-gray-500">Delhi</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
+     
 
       <section>
         <Womanwellness/>

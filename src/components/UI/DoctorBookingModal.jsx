@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate,useParams } from 'react-router-dom';
 import { Award, MapPin, Info, CheckCircle, Calendar, Clock, User, ArrowLeft } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+
 
 const DoctorBookingModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { _id } = useParams();
+  console.log('ID:', _id);
+
+ 
+
   
   // Get doctor data from navigation state
   const { doctor, consultationType, fromSpecialty } = location.state || {};
@@ -24,12 +32,6 @@ const DoctorBookingModal = () => {
     }
   }, [consultationType]);
 
-  // Redirect if no doctor data
-  if (!doctor) {
-    navigate(-1);
-    return null;
-  }
-
   // Updated appointment types
   const appointmentTypes = [
     { 
@@ -41,10 +43,57 @@ const DoctorBookingModal = () => {
     { id: 'checkup', name: 'Health Checkup', icon: <CheckCircle size={20} /> }
   ];
 
-  const timeSlots = [
-    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM',
-    '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
-  ];
+  // Generate the selected date in YYYY-MM-DD format
+  const getFormattedDate = (day) => {
+    const today = new Date();
+    const selectedDateObj = new Date(today);
+    selectedDateObj.setDate(day);
+    return selectedDateObj.toISOString().split('T')[0];
+  };
+
+  // API call for available time slots with dynamic date
+  const { data, isError, error, isLoading } = useQuery({
+    
+    queryKey: ['availableTimeSlots', doctor?._id, selectedDate],
+
+    
+    queryFn: async () => {
+      if (!doctor) return { timeSlots: [] };
+      const formattedDate = getFormattedDate(selectedDate);
+      const token = localStorage.getItem('newMedihubToken');
+      const response = await fetch(`https://medisewa.onrender.com/api/v1/bookings/doctorBookings/${`679808d2b968bc06659315ac`}?date=${formattedDate}`,{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch time slots');
+      }
+      
+      return response.json();
+    },
+    enabled: !!doctor && !!selectedDate,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+ console.log('Data:', data);
+
+  // Fixed: Use optional chaining and provide fallback
+  const timeSlots = data?.slots || [];
+  console.log('Time Slots:', timeSlots);
+
+  // Reset selected time when date changes
+  useEffect(() => {
+    setSelectedTime('');
+  }, [selectedDate]);
+
+  // Redirect if no doctor data
+  if (!doctor) {
+    navigate(-1);
+    return null;
+  }
 
   // Generate calendar dates (current month)
   const generateCalendarDates = () => {
@@ -121,7 +170,7 @@ const DoctorBookingModal = () => {
       },
       appointmentType: selectedAppointmentType,
       consultationType: consultationType,
-      date: selectedDate,
+      date: getFormattedDate(selectedDate),
       time: selectedTime,
       fromSpecialty: fromSpecialty
     };
@@ -299,21 +348,49 @@ const DoctorBookingModal = () => {
               {/* Time Slot Selection */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-700 mb-3">Select Time Slot</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => handleTimeSelect(time)}
-                      className={`p-3 border rounded-lg text-center transition-all ${
-                        selectedTime === time
-                          ? 'border-indigo-500 bg-indigo-500 text-white'
-                          : 'border-gray-200 hover:border-indigo-300 text-gray-600'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                {(() => {
+                  if (isLoading) {
+                    return (
+                      <div className="flex justify-center py-4">
+                        <div className="text-gray-500">Loading available time slots...</div>
+                      </div>
+                    );
+                  } else if (isError) {
+                    return (
+                      <div className="text-red-500 text-center py-4">
+                        Error loading time slots. Please try again.
+                      </div>
+                    );
+                  } else if (timeSlots.length === 0) {
+                    return (
+                      <div className="text-gray-500 text-center py-4">
+                        No available time slots for this date.
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                        {timeSlots.map((slot, index) => (
+                          <button
+                            key={slot.time || index}
+                            onClick={() => handleTimeSelect(slot.time)}
+                            disabled={slot.isBooked}
+                            className={`p-3 border rounded-lg text-center transition-all ${
+                              slot.isBooked 
+                                ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : selectedTime === slot.time
+                                ? 'border-indigo-500 bg-indigo-500 text-white'
+                                : 'border-gray-200 hover:border-indigo-300 text-gray-600'
+                            }`}
+                          >
+                            {slot.time}
+                            {slot.isBooked && <div className="text-xs mt-1">Booked</div>}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  }
+                })()}
               </div>
 
               {/* Booking Summary */}
@@ -323,7 +400,7 @@ const DoctorBookingModal = () => {
                   <div className="space-y-1 text-sm text-gray-600">
                     <p><span className="font-medium">Doctor:</span> Dr. {doctor.name}</p>
                     <p><span className="font-medium">Type:</span> {appointmentTypes.find(t => t.id === selectedAppointmentType)?.name}</p>
-                    <p><span className="font-medium">Date:</span> {selectedDate} June 2025</p>
+                    <p><span className="font-medium">Date:</span> {getFormattedDate(selectedDate)}</p>
                     <p><span className="font-medium">Time:</span> {selectedTime}</p>
                     <p><span className="font-medium">Fee:</span> {doctor.consultationFee}</p>
                   </div>

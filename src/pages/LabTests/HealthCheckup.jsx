@@ -18,7 +18,6 @@ const HealthCheckups = () => {
       originalPrice: 7200,
       discountPrice: 2680,
       discount: '56% off',
-      memberPrice: 2546,
       reportTime: '10 hours',
       tag: 'PACKAGE'
     },

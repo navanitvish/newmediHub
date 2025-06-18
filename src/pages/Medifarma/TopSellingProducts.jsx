@@ -1,109 +1,103 @@
-
 import { useDispatch } from 'react-redux';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
 import { addToCart } from '../../redux/slices/cartSlice';
-
+import { useQuery } from '@tanstack/react-query';
 
 export const TopSellingProducts = () => {
-  // This could come from a context, redux, or props
   const dispatch = useDispatch();
+  
   const handleAddToCart = (product) => {
     dispatch(addToCart({
       id: product.id,
       name: product.name,
       price: product.discountPrice,
       image: product.image,
-      quantity: 1
-
+      quantity: 1,
+      manufacturer: product.manufacturer,
+      unit: product.unit
     }));
   };
 
-  
-  // Different set of products
-  const topSellingProducts = [
-    {
-      id: 101,
-      name: 'Apollo Premium Multivitamins, 30 tablets',
-      originalPrice: 450,
-      discountPrice: 399,
-      discount: '11% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apa0097_1-sep2023.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Top Seller'
+  const { data: apiResponse, isLoading, error } = useQuery({
+    queryKey: ['topSellMedicines'],
+    queryFn: async () => {
+      const response = await fetch('https://medisewa.onrender.com/api/v1/selles/topSellMedicines');
+      if (!response.ok) {
+        throw new Error('Failed to fetch top selling medicines');
+      }
+      return response.json();
     },
-    {
-      id: 102,
-      name: 'Apollo Calcium & Vitamin D3 Supplements, 60 tablets',
-      originalPrice: 350,
-      discountPrice: 315,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/os/prod-media/creative-1744642607057-evion_824x412.png?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
-      badge: 'Popular'
-    },
-    {
-      id: 103,
-      name: 'Apollo Life Premium Citrus Refreshing Wet Wipes, 60 count',
-      originalPrice: 160,
-      discountPrice: 144,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/os/prod-media/creative-1744648844529-nivea_luminous_824x412.jpg?tr=q-80,f-webp,w-100,dpr-1,c-at_max',
-      badge: 'Bestseller'
-    },
-    {
-      id: 104,
-      name: 'Apollo Life Aloe Vera Skin Care Gel, 200 gm (2×100 gm)',
-      originalPrice: 160,
-      discountPrice: 144,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apr0111_1-qwerf.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Buy 1 Get 1'
-    },
-    {
-      id: 105,
-      name: 'Apollo Essentials Sandal Soap, 250 gm (2×125 gm)',
-      originalPrice: 200,
-      discountPrice: 180,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/apa0089_1-sep2023.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Buy 1 Get 1'
-    },
-    {
-      id: 106,
-      name: 'Apollo Pharmacy ORS Orange Flavour Drink, 200ml',
-      originalPrice: 100,
-      discountPrice: 90,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/a/p/ape0161-1-.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Bestseller'
-    },
-    {
-      id: 107,
-      name: 'Apollo Multivitamin Tablets, 100 count',
-      originalPrice: 180,
-      discountPrice: 162,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0132_1-june23_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Buy 1 Get 1'
-    },
-    {
-      id: 108,
-      name: 'Apollo Hand Sanitizer, 100ml',
-      originalPrice: 120,
-      discountPrice: 108,
-      discount: '10% off',
-      image: 'https://images.apollo247.in/pub/media/catalog/product/o/n/one0172_1-june23_1_.jpg?tr=q-80,f-webp,w-150,dpr-1,c-at_max',
-      badge: 'Bestseller'
-    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+  });
 
-    
-    // Add more products as needed...
-  ];
+  // Extract and transform API data
+  const apiProducts = apiResponse?.result || [];
   
+  // Transform API data to match the expected product format
+  const transformedProducts = apiProducts.map(item => {
+    const product = item.medicine;
+    const totalSold = item.totalSold;
+    
+    // Calculate discount price based on offer
+    let discountPrice = product.price;
+    if (product.isOffer && product.offer) {
+      if (product.offerType === 'percentage') {
+        discountPrice = Math.round(product.price * (1 - product.offer / 100));
+      } else if (product.offerType === 'fixed') {
+        discountPrice = Math.max(0, product.price - product.offer);
+      }
+    }
+    
+    return {
+      id: product._id,
+      name: product.title,
+      originalPrice: product.price,
+      discountPrice: discountPrice,
+      discount: product.isOffer && product.offer ? 
+        `${product.offer}${product.offerType === 'percentage' ? '%' : '₹'} off` : null,
+      image: product.images && product.images.length > 0 ? 
+        product.images[0].image : 
+        '/api/placeholder/120/120',
+      badge: totalSold > 20 ? 'Top Seller' : 
+             product.isOffer ? 'Special Offer' :
+             product.inStock ? 'In Stock' : 'Out of Stock',
+      inStock: product.inStock,
+      manufacturer: product.manufacturer,
+      description: product.description,
+      unit: product.unit,
+      size: product.size,
+      totalSold: totalSold,
+      quantity: product.quntity
+    };
+  });
+
+  console.log("Top Selling Products API Response:", apiResponse);
+  console.log("Transformed Top Selling Products:", transformedProducts);
+
+  
+  const productsToDisplay = transformedProducts.length > 0 ? transformedProducts : [];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <div className="text-lg">Loading top selling products...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Error fetching top selling products:', error);
+    // Still show fallback products on error
+  }
+
   return (
     <ProductCarousel
       title="Top Selling Products"
       viewAllLink="#top-selling"
-      products={topSellingProducts}
+      products={productsToDisplay}
       onAddToCart={handleAddToCart}
+      isLoading={isLoading}
     />
   );
 };

@@ -12,8 +12,6 @@ const Navbar = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showCartButton, setShowCartButton] = useState(false);
-  const [medifarmaDropdownOpen, setMedifarmaDropdownOpen] = useState(false);
-  // const [cartCount, setCartCount] = useState(3);
  const cartQuantity = useSelector(selectCartTotalQuantity);
 
 
@@ -46,8 +44,8 @@ const Navbar = () => {
 
   // Generate user initials for avatar
   const getUserInitials = () => {
-    if (!user?.name) return 'U';
-    const nameParts = user.name.split(' ');
+    if (!userData?.name) return 'M';
+    const nameParts = userData?.name.split(' ');
     if (nameParts.length >= 2) {
       return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
     }
@@ -62,9 +60,6 @@ const Navbar = () => {
     setProfileMenuOpen(!profileMenuOpen);
   };
 
-  const toggleMedifarmaDropdown = () => {
-    setMedifarmaDropdownOpen(!medifarmaDropdownOpen);
-  };
 
   // Check if a link is active
   const isActive = (path) => {
@@ -199,15 +194,6 @@ const Navbar = () => {
               </Link>
               )}
 
-              {/* Notifications Button */}
-              <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  2
-                </span>
-              </button>
               
               {/* Auth Buttons - Right Side */}
               <div className="flex-shrink-0 flex items-center bg-gray-100 rounded-full">
@@ -253,7 +239,7 @@ const Navbar = () => {
                            Profile
                         </Link>
                         <Link
-                          to="/appointments"
+                          to="/my-appointments"
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           onClick={() => setProfileMenuOpen(false)}
                         >

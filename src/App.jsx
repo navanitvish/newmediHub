@@ -1,12 +1,18 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 
 import MainLayout from './components/layout/MainLayout';
 import AuthLayout from './components/layout/AuthLayout';
 import PrivateRoute from './routes/PrivateRoute';
 import { getUserProfile } from './redux/auth/authActions';
+import BrandProductDetails from './pages/Medifarma/Productpage/BrandProductdetails';
+import ProductDetails from './pages/Medifarma/ProductDetails';
+import MyAppointments from './pages/Profiledata/MyAppointment';
+
+
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/HomePage'));
@@ -19,13 +25,15 @@ const Medifarma = lazy(() => import('./pages/Medifarma/Medifarma'));
 const Login = lazy(() => import('./pages/Login'));
 const ProfilePage = lazy(() => import('./pages/Profile'));
 const CartPages = lazy(() => import('./pages/CartPage'));
-const DoctorSearchResults = lazy(() => import('./pages/Doctors/DoctorSearchResults'));
+
 const MedicineSearch = lazy(() => import('./components/UI/MedicineSearch'));
 const CategoryPage = lazy(() => import('./pages/LabTests/CategoryPage'));
 const DoctorBookingModal = lazy(() => import('./components/UI/DoctorBookingModal'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
-import LabTestsPage from './pages/LabTests/Labtests';
+const LabTestsPage = lazy(() => import('./pages/LabTests/Labtests'));
+const DoctorSearchForm = lazy(() => import('./pages/Doctors/DoctorSearchForm'));
+const DoctorResults = lazy(() => import('./pages/Doctors/DoctorResults'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,7 +63,7 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/" element={<Home />} />
               <Route path="/doctors" element={<DoctorPage />} />
-              <Route path="/DoctorSearchResults" element={<DoctorSearchResults />} />
+           
               <Route path="/consultation/:specialtyId" element={<DoctorConsultationPlatform />} />
               <Route path="/booking/:doctorId" element={<DoctorBookingModal />} />
               <Route path="/labs" element={<LabTestsPage />} />
@@ -66,6 +74,22 @@ function App() {
               <Route path="/healthcard" element={<SmartHealthMembershipCards />} />
               <Route path="/medifarma" element={<Medifarma />} />
               <Route path="/search" element={<MedicineSearch />} />
+              <Route path="/product/:productId" element={<ProductDetails />} />
+
+              <Route path="/brands/:brandId" element={<BrandProductDetails />} />
+             
+
+              <Route path="/" element={<Navigate to="/doctors/search" replace />} />
+
+              <Route path="/my-appointments" element={<MyAppointments/>} />
+
+
+            
+            {/* Doctor search form */}
+            <Route path="/doctors/search" element={<DoctorSearchForm />} />
+            
+            {/* Doctor search results */}
+            <Route path="/doctors/search-results" element={<DoctorResults />} />
 
               <Route element={<PrivateRoute />}>
                 <Route path="/appointment" element={<AppointmentForm />} />
