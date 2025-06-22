@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FiSearch, FiX, FiShoppingCart, FiPlus } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice'; // Import the actual Redux action
+import { addMedicine } from '../../redux/slices/medicineSlice';// Import the actual Redux action
 import { Miniumoff } from './../../pages/Medifarma/Miniumoff';
 
 const MedicineSearch = () => {
@@ -70,7 +70,7 @@ const MedicineSearch = () => {
       quantity: 1
     };
     
-    dispatch(addToCart(productForCart));
+    dispatch(addMedicine(productForCart));
     
     // Modern toast notification instead of alert
     const toast = document.createElement('div');

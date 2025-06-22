@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 // Components
-import HealthConditionsBrowser from '../../components/UI/HealthConditionsBrowser';
+
 import ApolloHealthcareNav from './medibar';
 import PopularLabTests from '../LabTests/PopularLabTests';
 import BannerCarousel from '../../components/UI/Banner';
@@ -30,6 +30,7 @@ import Brand from './brand';
 import PharmaciesNearYou from './PharmaciesNearYou';
 import { WomanWellness } from './WomanWellness';
 import { selectMedicineTotalQuantity } from '../../redux/slices/medicineSlice';
+import { HealthConditionsBrowser } from '../../components/UI/HealthConditionsBrowser';
 
 const Medifarma = () => {
   const navigate = useNavigate();
