@@ -160,7 +160,7 @@ const EnhancedHeroSection = ( ) => {
                   whileTap={{ scale: 0.98 }}
                 >
                   <Link
-                    to="/appointment"
+                    to="/doctors"
                     className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
                   >
                     Book Appointment

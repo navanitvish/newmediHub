@@ -8,14 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 const DoctorBookingModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { _id } = useParams();
-  console.log('ID:', _id);
+  const { userId } = useParams();
+  console.log('ID:', userId);
 
  
 
   
   // Get doctor data from navigation state
-  const { doctor, consultationType, fromSpecialty } = location.state || {};
+  const { doctor, consultationType, fromSpecialty  } = location.state || {};
   
   const [selectedAppointmentType, setSelectedAppointmentType] = useState('');
   const [selectedDate, setSelectedDate] = useState(15);
@@ -60,8 +60,8 @@ const DoctorBookingModal = () => {
     queryFn: async () => {
       if (!doctor) return { timeSlots: [] };
       const formattedDate = getFormattedDate(selectedDate);
-      const token = localStorage.getItem('newMedihubToken');
-      const response = await fetch(`https://medisewa.onrender.com/api/v1/bookings/doctorBookings/${`679808d2b968bc06659315ac`}?date=${formattedDate}`,{
+      const token = localStorage.getItem('smartmeditoken');
+      const response = await fetch(`https://medisewa.onrender.com/api/v1/bookings/doctorBookings/${userId}?date=${formattedDate}`,{
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

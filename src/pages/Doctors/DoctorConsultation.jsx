@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, MapPin, Star, Clock, Video, Calendar, ArrowLeft } from 'lucide-react';
-import App from './../../App';
+
 
 export default function ConsultationRouteHandler() {
   // Get specialty ID from URL parameters
@@ -49,6 +49,12 @@ export default function ConsultationRouteHandler() {
 
   // Extract doctors from API response
   const doctors = doctorsResponse?.result || [];
+  console.log(doctors);
+  // i want to get doctor userID
+  const user = doctors[0]?.userId;
+  console.log(user)
+  
+  
 
   // Helper function to safely convert specialization to searchable string
   const getSpecializationString = (specialization) => {
@@ -135,6 +141,7 @@ export default function ConsultationRouteHandler() {
     // Create simplified doctor data object
     const doctorData = {
       id: doctor._id,
+      userId: doctor.userId,
       name: doctor.name,
       image: doctor.image || '/api/placeholder/400/400',
       specialty: displaySpecialization(doctor.specialization),
@@ -153,12 +160,13 @@ export default function ConsultationRouteHandler() {
     };
 
     // Navigate to booking page with doctor data
-    navigate(`/booking/${doctor._id}`, { 
+    navigate(`/booking/${doctor._id}/${user}`, { 
       state: { 
         doctor: doctorData,
         consultationType: consultationType,
         fromSpecialty: specialtyName,
-        specialtyId: specialtyId
+        specialtyId: specialtyId,
+      
       }
     });
   };

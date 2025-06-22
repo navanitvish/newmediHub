@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addLabTest } from '../../redux/slices/labTestSlice';
 
 // Dummy test data
 const tests = [
@@ -149,7 +149,7 @@ function TestCardItem({ testData: test }) {
   const dispatch = useDispatch();
   
   const handleAddToCart = () => {
-    dispatch(addToCart({...test, type: 'test'}));
+    dispatch(addLabTest({...test, type: 'test'}));
   };
   
   return (

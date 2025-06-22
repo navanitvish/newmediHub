@@ -50,7 +50,7 @@ const HealthCategoriesPage = () => {
         
     return (
       <div
-        onClick={() => navigate(`/category/${category.slug || category.route}`)}
+        onClick={() => navigate(`/category/${category._id}`)}
         className="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer flex items-center space-x-3 group hover:border-teal-300"
       >
         <div className="relative">

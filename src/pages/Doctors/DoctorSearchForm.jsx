@@ -48,7 +48,7 @@ const DoctorSearchForm = () => {
             type="submit" 
             className="bg-indigo-800 hover:bg-indigo-900 text-white px-8 py-4 rounded-xl font-medium shadow-xl transition-all duration-300 flex-shrink-0 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Find Doctors
+            Find Symptoms
           </button>
         </div>
       </form>

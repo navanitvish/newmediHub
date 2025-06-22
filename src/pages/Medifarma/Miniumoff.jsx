@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addMedicine } from '../../redux/slices/medicineSlice';
 
 export const Miniumoff = () => {
   const dispatch = useDispatch();
@@ -82,11 +82,12 @@ export const Miniumoff = () => {
   };
 
   const handleAddToCart = (product) => {
-    dispatch(addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.discountPrice,
-      image: product.image,
+    dispatch(addMedicine({
+       id: product.id || product._id,
+      name: product.name || product.title,
+      originalPrice: product.originalPrice || product.price,
+      price: product.discountPrice || product.price,
+      image: product.image || (product.images && product.images[0]) || '/api/placeholder/120/120',
       quantity: 1
     }));
   };

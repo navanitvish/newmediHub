@@ -1,15 +1,16 @@
 import { useDispatch } from 'react-redux';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addMedicine } from '../../redux/slices/medicineSlice';
 import { useQuery } from '@tanstack/react-query';
 
 export const WomanWellness = () => {
   const dispatch = useDispatch();
   
   const handleAddToCart = (product) => {
-    dispatch(addToCart({
+    dispatch(addMedicine({
       id: product.id || product._id,
       name: product.name || product.title,
+      originalPrice: product.originalPrice || product.price,
       price: product.discountPrice || product.price,
       image: product.image || (product.images && product.images[0]) || '/api/placeholder/120/120',
       quantity: 1

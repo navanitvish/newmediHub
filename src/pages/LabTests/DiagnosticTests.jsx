@@ -1,11 +1,11 @@
 import React from 'react';
 import CheckupPackageList from '../../components/UI/CheckupPackageList';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addLabTest } from '../../redux/slices/labTestSlice';
 const DiagnosticTests = () => {
     const dispatch = useDispatch();
   const handleAddToCart = (pkg) => {
-    dispatch (addToCart({
+    dispatch (addLabTest({
       id: pkg.id,
       name: pkg.name,
       price: pkg.discountPrice,

@@ -1,7 +1,7 @@
 import React from 'react';
 import CheckupPackageList from '../../components/UI/CheckupPackageList';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addLabTest } from '../../redux/slices/labTestSlice';
 import { useQuery } from '@tanstack/react-query';
 
 const TopBookedTests = () => {
@@ -22,7 +22,7 @@ const TopBookedTests = () => {
   });
 
   const handleAddToCart = (pkg) => {
-    dispatch(addToCart({
+    dispatch(addLabTest({
       id: pkg.id,
       name: pkg.name,
       price: pkg.discountPrice || pkg.price,

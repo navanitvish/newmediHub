@@ -1,122 +1,158 @@
-// File: src/pages/CheckoutPage.js
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { 
-  selectCartItems, 
-  selectCartTotalAmount,
-  clearCart
-} from '../redux/slices/cartSlice';
-import { 
-  ArrowLeft, 
-  User, 
-  Phone, 
-  Mail, 
-  MapPin, 
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  ArrowLeft,
+  User,
   Calendar,
-  Clock,
   CreditCard,
-  Smartphone,
-  Building,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
+  Plus,
+  Minus,
+  Trash2,
+} from "lucide-react";
+import useAuth from "../hooks/useAuth";
+
+// Redux imports
+import {
+  removeLabTest,
+  increaseLabTestQuantity,
+  decreaseLabTestQuantity,
+  clearLabTests,
+} from "../redux/slices/labTestSlice";
+import {
+  removeMedicine,
+  increaseMedicineQuantity,
+  decreaseMedicineQuantity,
+  clearMedicines,
+} from "../redux/slices/medicineSlice";
 
 const CheckoutPage = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cartItems = useSelector(selectCartItems);
-  const totalAmount = useSelector(selectCartTotalAmount);
-  
-  const [currentStep, setCurrentStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const [customerInfo, setCustomerInfo] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    age: '',
-    gender: ''
-  });
-  
-  const [addressInfo, setAddressInfo] = useState({
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    landmark: ''
-  });
-  
-  const [appointmentInfo, setAppointmentInfo] = useState({
-    date: '',
-    timeSlot: '',
-    collectionType: 'home'
-  });
-  
-  const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: '',
-    upiId: ''
-  });
+  const dispatch = useDispatch();
+  const { user, logout, isAuthenticated } = useAuth();
 
+    const userData = React.useMemo(() => user?.result || {}, [user]);
+  console.log(user);
+
+  // Get cart items from Redux store
+  const labTests = useSelector((state) => state.labTests.items || []);
+  const medicines = useSelector((state) => state.medicines.items || []);
+
+  // Combine all items
+  const allItems = [...labTests, ...medicines];
+
+  // Calculate total
+  const totalAmount = allItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
   const discountAmount = Math.round(totalAmount * 0.1);
   const finalAmount = totalAmount - discountAmount;
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  // Form data - pre-populate with user data if authenticated
+  const [formData, setFormData] = useState({
+    // User ID for backend
+    userId: user?._id || "",
+
+    // Appointment
+    date: "",
+    timeSlot: "",
+
+    // Payment
+    paymentMethod: "razorpay",
+  });
+
+  // Update form data when user data changes
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      setFormData((prev) => ({
+        ...prev,
+        userId: user._id || "",
+      }));
+    }
+  }, [user, isAuthenticated]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const loadRazorpay = () => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => setRazorpayLoaded(true);
+      script.onerror = () => console.error("Failed to load Razorpay script");
+      document.body.appendChild(script);
+    };
+
+    if (!window.Razorpay) {
+      loadRazorpay();
+    } else {
+      setRazorpayLoaded(true);
+    }
+  }, []);
+
   // Redirect if cart is empty
-  if (cartItems.length === 0) {
-    navigate('/');
+  if (allItems.length === 0) {
+    navigate("/");
     return null;
   }
 
   const timeSlots = [
-    '07:00 AM - 09:00 AM',
-    '09:00 AM - 11:00 AM', 
-    '11:00 AM - 01:00 PM',
-    '02:00 PM - 04:00 PM',
-    '04:00 PM - 06:00 PM',
-    '06:00 PM - 08:00 PM'
+    "07:00 AM - 09:00 AM",
+    "09:00 AM - 11:00 AM",
+    "11:00 AM - 01:00 PM",
+    "02:00 PM - 04:00 PM",
+    "04:00 PM - 06:00 PM",
+    "06:00 PM - 08:00 PM",
   ];
 
-  const handleInputChange = (section, field, value) => {
-    switch(section) {
-      case 'customer':
-        setCustomerInfo(prev => ({ ...prev, [field]: value }));
-        break;
-      case 'address':
-        setAddressInfo(prev => ({ ...prev, [field]: value }));
-        break;
-      case 'appointment':
-        setAppointmentInfo(prev => ({ ...prev, [field]: value }));
-        break;
-      case 'payment':
-        setPaymentInfo(prev => ({ ...prev, [field]: value }));
-        break;
+  // Redux action handlers
+  const handleRemoveItem = (item) => {
+    if (item.type === "lab" || labTests.find((lab) => lab.id === item.id)) {
+      dispatch(removeLabTest(item.id));
+    } else {
+      dispatch(removeMedicine(item.id));
     }
   };
 
+  const handleIncreaseQuantity = (item) => {
+    if (item.type === "lab" || labTests.find((lab) => lab.id === item.id)) {
+      dispatch(increaseLabTestQuantity(item.id));
+    } else {
+      dispatch(increaseMedicineQuantity(item.id));
+    }
+  };
+
+  const handleDecreaseQuantity = (item) => {
+    if (item.type === "lab" || labTests.find((lab) => lab.id === item.id)) {
+      dispatch(decreaseLabTestQuantity(item.id));
+    } else {
+      dispatch(decreaseMedicineQuantity(item.id));
+    }
+  };
+
+  const clearAllCarts = () => {
+    dispatch(clearLabTests());
+    dispatch(clearMedicines());
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const validateStep = (step) => {
-    switch(step) {
+    switch (step) {
       case 1:
-        return customerInfo.firstName && customerInfo.lastName && 
-               customerInfo.email && customerInfo.phone && 
-               customerInfo.age && customerInfo.gender;
+        return isAuthenticated && user; // Just check if user is authenticated
       case 2:
-        return addressInfo.address && addressInfo.city && 
-               addressInfo.state && addressInfo.pincode;
+        return formData.date && formData.timeSlot;
       case 3:
-        return appointmentInfo.date && appointmentInfo.timeSlot;
-      case 4:
-        if (paymentMethod === 'card') {
-          return paymentInfo.cardNumber && paymentInfo.expiryDate && 
-                 paymentInfo.cvv && paymentInfo.cardName;
-        } else if (paymentMethod === 'upi') {
-          return paymentInfo.upiId;
-        }
-        return true;
+        return true; // Razorpay handles payment validation
       default:
         return false;
     }
@@ -124,489 +160,573 @@ const CheckoutPage = () => {
 
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
     } else {
-      alert('Please fill all required fields');
+      alert("Please fill all required fields");
     }
   };
 
-  const handlePayment = async () => {
+  // Determine item type for API call
+  // enum: ['test', 'appoinment', 'medicine', 'package'],
+
+  const getItemType = () => {
+    if (medicines.length > 0 && labTests.length === 0) return "medicine";
+    if (labTests.length > 0 && medicines.length === 0) return "test";
+
+    return "mixed"; // If both types exist
+  };
+
+  const handleRazorpayPayment = async () => {
+    if (!razorpayLoaded) {
+      alert("Payment system is loading. Please try again.");
+      return;
+    }
+
     setIsProcessing(true);
-    
-    // Simulate payment processing
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Create order data
-      const orderData = {
-        orderId: 'ORD' + Date.now(),
-        items: cartItems,
-        customer: customerInfo,
-        address: addressInfo,
-        appointment: appointmentInfo,
-        payment: {
-          method: paymentMethod,
-          amount: finalAmount,
-          status: 'completed'
-        },
-        orderDate: new Date().toISOString(),
-        status: 'confirmed'
+      // Create order on backend
+      const token = localStorage.getItem("smartmeditoken");
+      console.log(token);
+
+      // Prepare order data according to new format
+      const orderPayload = {
+        amount: (finalAmount * 100).toString(), // Convert to paise
+        type: getItemType(),
       };
-      
-      // Clear cart and redirect to success page
-      dispatch(clearCart());
-      alert(`Payment Successful! Order ID: ${orderData.orderId}`);
-      navigate('/order-success', { state: { orderData } });
-      
+
+      const orderResponse = await fetch(
+        "https://medisewa.onrender.com/api/v1/payment/generateOrder",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(orderPayload),
+        }
+      );
+      console.log("Response status:", orderResponse.status);
+      console.log("Response headers:", [...orderResponse.headers.entries()]);
+
+      const orderData = await orderResponse.json();
+
+      console.log("orderData:", orderData);
+
+      // Extract relevant fields
+      const razorpayOrderId = orderData?.order?.id; // e.g., "order_QjSgvukwRmZ3ee"
+      const amount = orderData?.order?.amount;
+      const currency = orderData?.order?.currency || "INR";
+      const transactionId = orderData?.result?._id; // backend transaction DB ID
+      const pay_amount = (orderData?.order?.amount / 100).toString(); // Convert paise to rupees
+
+      console.log("razorpayOrderId:", razorpayOrderId);
+      console.log("amount:", amount);
+      console.log("currency:", currency);
+      console.log("transactionId:", transactionId);
+      console.log("pay_amount:", pay_amount);
+
+      if (!orderResponse.ok) {
+        throw new Error(orderData.error || "Failed to create order");
+      }
+
+      // Razorpay options
+      const options = {
+        key: "rzp_test_AbH4EMmGnjMnzc",
+        amount: amount,
+        currency: currency,
+        name: "HealthCare Services",
+        description: "Lab Tests & Medicines",
+        order_id: razorpayOrderId,
+        handler: async (response) => {
+          try {
+            // Prepare verification data according to new format
+            const verifyPayload = {
+              data: {
+                razorpay_signature: response.razorpay_signature,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+              },
+              transactionId: transactionId || orderData.id,
+              pay_amount: pay_amount, // Convert paise to rupees
+              // type
+              
+            };
+
+            console.log("verifyPayload", verifyPayload);
+
+            // Add specific IDs based on item type
+            if (medicines.length > 0) {
+              verifyPayload.medicineId = medicines[0].id; // Assuming single medicine for now
+            }
+            if (labTests.length > 0) {
+              verifyPayload.testId = labTests[0].id; // Assuming single test for now
+            }
+
+            // Verify payment on backend
+            const verifyResponse = await fetch(
+              "https://medisewa.onrender.com/api/v1/payment/verifyPayment",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(verifyPayload),
+              }
+            );
+
+            const verifyData = await verifyResponse.json();
+
+            if (verifyResponse.ok && verifyData.success) {
+              // Payment successful - clear all carts
+              clearAllCarts();
+
+              const orderData = {
+                orderId: verifyData.orderId || response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                items: allItems,
+                customer: {
+                  userId: userData.userId,
+                  name: userData.name,
+                  email: userData.email,
+                  phone: userData.mobile,
+                  address: userData.address,
+                },
+                appointment: {
+                  date: formData.date,
+                  timeSlot: formData.timeSlot,
+                },
+                payment: {
+                  method: "razorpay",
+                  amount: finalAmount,
+                  status: "completed",
+                },
+                orderDate: new Date().toISOString(),
+                status: "confirmed",
+              };
+
+              alert(`Payment Successful! Order ID: ${orderData.orderId}`);
+              navigate("/order-success", { state: { orderData } });
+            } else {
+              throw new Error("Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: `userData.name}`,
+          email: userData.email,
+          contact:userData.mobile,
+        },
+        notes: {
+          appointment_date: formData.date,
+          appointment_time: formData.timeSlot,
+        },
+        theme: {
+          color: "#2563eb",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      console.log("Razorpay options:", options);
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (error) {
-      alert('Payment failed. Please try again.');
-    } finally {
+      console.error("Payment error:", error);
+      alert("Payment failed. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  const renderStepIndicator = () => (
+  // Step indicator component (updated for 3 steps)
+  const StepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2, 3].map((step) => (
         <div key={step} className="flex items-center">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium
-            ${currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-medium
+            ${
+              currentStep >= step
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-600"
+            }`}
+          >
             {currentStep > step ? <CheckCircle size={20} /> : step}
           </div>
-          {step < 4 && (
-            <div className={`w-12 h-1 mx-2 ${currentStep > step ? 'bg-blue-600' : 'bg-gray-200'}`} />
+          {step < 3 && (
+            <div
+              className={`w-12 h-1 mx-2 ${
+                currentStep > step ? "bg-blue-600" : "bg-gray-200"
+              }`}
+            />
           )}
         </div>
       ))}
     </div>
   );
 
-  const renderCustomerInfo = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-        <User size={20} className="mr-2" />
-        Personal Information
-      </h3>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
-          <input
-            type="text"
-            value={customerInfo.firstName}
-            onChange={(e) => handleInputChange('customer', 'firstName', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter first name"
-          />
+  // Personal Information Step - Display user data only
+  const PersonalInfoStep = () => (
+    <div className="space-y-6">
+      {isAuthenticated && user ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <User size={20} className="mr-2" />
+            Personal Information
+          </h3>
+
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+                <img
+                  src={
+                    userData.image ||
+                    "https://cdn-icons-png.flaticon.com/512/194/194915.png"
+                  }
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold text-gray-800">
+                  {userData.name}
+                </h4>
+                <p className="text-sm text-gray-600">{userData.email}</p>
+                <p className="text-sm text-gray-600">{userData.mobile}</p>
+                {userData.address && (
+                  <p className="text-sm text-gray-600 flex items-center mt-1">
+                    <svg
+                      className="w-4 h-4 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    {userData.address}
+                  </p>
+                )}
+                <div className="flex items-center mt-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <CheckCircle size={12} className="mr-1" />
+                    Verified Account
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
-          <input
-            type="text"
-            value={customerInfo.lastName}
-            onChange={(e) => handleInputChange('customer', 'lastName', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter last name"
-          />
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="text-center py-8">
+            <p className="text-gray-600">
+              Please login to continue with checkout
+            </p>
+          </div>
         </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-          <input
-            type="email"
-            value={customerInfo.email}
-            onChange={(e) => handleInputChange('customer', 'email', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter email address"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-          <input
-            type="tel"
-            value={customerInfo.phone}
-            onChange={(e) => handleInputChange('customer', 'phone', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter phone number"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Age *</label>
-          <input
-            type="number"
-            value={customerInfo.age}
-            onChange={(e) => handleInputChange('customer', 'age', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter age"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
-          <select
-            value={customerInfo.gender}
-            onChange={(e) => handleInputChange('customer', 'gender', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-      </div>
+      )}
     </div>
   );
 
-  const renderAddressInfo = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-        <MapPin size={20} className="mr-2" />
-        Address Information
-      </h3>
-      
-      <div className="grid grid-cols-1 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Full Address *</label>
-          <textarea
-            value={addressInfo.address}
-            onChange={(e) => handleInputChange('address', 'address', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter complete address"
-            rows={3}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
-            <input
-              type="text"
-              value={addressInfo.city}
-              onChange={(e) => handleInputChange('address', 'city', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter city"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">State *</label>
-            <input
-              type="text"
-              value={addressInfo.state}
-              onChange={(e) => handleInputChange('address', 'state', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter state"
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">PIN Code *</label>
-            <input
-              type="text"
-              value={addressInfo.pincode}
-              onChange={(e) => handleInputChange('address', 'pincode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter PIN code"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Landmark</label>
-            <input
-              type="text"
-              value={addressInfo.landmark}
-              onChange={(e) => handleInputChange('address', 'landmark', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter landmark"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderAppointmentInfo = () => (
+  // Appointment Step (now step 2)
+  const AppointmentStep = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <Calendar size={20} className="mr-2" />
         Schedule Appointment
       </h3>
-      
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Collection Type</label>
-        <div className="flex space-x-4">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="home"
-              checked={appointmentInfo.collectionType === 'home'}
-              onChange={(e) => handleInputChange('appointment', 'collectionType', e.target.value)}
-              className="mr-2"
-            />
-            Home Collection (FREE)
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              value="center"
-              checked={appointmentInfo.collectionType === 'center'}
-              onChange={(e) => handleInputChange('appointment', 'collectionType', e.target.value)}
-              className="mr-2"
-            />
-            Visit Center
-          </label>
-        </div>
-      </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date *</label>
-          <input
-            type="date"
-            value={appointmentInfo.date}
-            onChange={(e) => handleInputChange('appointment', 'date', e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Time Slot *</label>
-          <select
-            value={appointmentInfo.timeSlot}
-            onChange={(e) => handleInputChange('appointment', 'timeSlot', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Select Time Slot</option>
-            {timeSlots.map(slot => (
-              <option key={slot} value={slot}>{slot}</option>
-            ))}
-          </select>
-        </div>
+        <input
+          type="date"
+          value={formData.date}
+          onChange={(e) => handleInputChange("date", e.target.value)}
+          min={new Date().toISOString().split("T")[0]}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <select
+          value={formData.timeSlot}
+          onChange={(e) => handleInputChange("timeSlot", e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select Time Slot *</option>
+          {timeSlots.map((slot) => (
+            <option key={slot} value={slot}>
+              {slot}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
 
-  const renderPaymentInfo = () => (
+  // Payment Step (now step 3)
+  const PaymentStep = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <CreditCard size={20} className="mr-2" />
         Payment Information
       </h3>
-      
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-3">Payment Method</label>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            { id: 'card', label: 'Credit/Debit Card', icon: CreditCard },
-            { id: 'upi', label: 'UPI', icon: Smartphone },
-            { id: 'netbanking', label: 'Net Banking', icon: Building },
-            { id: 'cod', label: 'Cash on Delivery', icon: AlertCircle }
-          ].map(method => (
-            <label key={method.id} className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                value={method.id}
-                checked={paymentMethod === method.id}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mr-3"
-              />
-              <method.icon size={20} className="mr-2 text-gray-600" />
-              <span className="text-sm">{method.label}</span>
+
+      <div className="space-y-4">
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center mb-2">
+            <input
+              type="radio"
+              id="razorpay"
+              name="payment"
+              value="razorpay"
+              checked={formData.paymentMethod === "razorpay"}
+              onChange={(e) =>
+                handleInputChange("paymentMethod", e.target.value)
+              }
+              className="mr-2"
+            />
+            <label htmlFor="razorpay" className="font-medium text-blue-800">
+              Pay with Razorpay
             </label>
-          ))}
+          </div>
+          <p className="text-sm text-blue-600 ml-6">
+            Secure payment with Credit Card, Debit Card, Net Banking, UPI &
+            Wallets
+          </p>
+        </div>
+
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center mb-2">
+            <input
+              type="radio"
+              id="cod"
+              name="payment"
+              value="cod"
+              checked={formData.paymentMethod === "cod"}
+              onChange={(e) =>
+                handleInputChange("paymentMethod", e.target.value)
+              }
+              className="mr-2"
+            />
+            <label htmlFor="cod" className="font-medium text-gray-800">
+              Cash on Delivery
+            </label>
+          </div>
+          <p className="text-sm text-gray-600 ml-6">
+            Pay ₹{finalAmount} in cash when our representative arrives
+          </p>
         </div>
       </div>
-      
-      {paymentMethod === 'card' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Card Number *</label>
-            <input
-              type="text"
-              value={paymentInfo.cardNumber}
-              onChange={(e) => handleInputChange('payment', 'cardNumber', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
-            <input
-              type="text"
-              value={paymentInfo.expiryDate}
-              onChange={(e) => handleInputChange('payment', 'expiryDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="MM/YY"
-              maxLength={5}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">CVV *</label>
-            <input
-              type="text"
-              value={paymentInfo.cvv}
-              onChange={(e) => handleInputChange('payment', 'cvv', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="123"
-              maxLength={4}
-            />
-          </div>
-          
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name *</label>
-            <input
-              type="text"
-              value={paymentInfo.cardName}
-              onChange={(e) => handleInputChange('payment', 'cardName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter name as on card"
-            />
-          </div>
-        </div>
-      )}
-      
-      {paymentMethod === 'upi' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">UPI ID *</label>
-          <input
-            type="text"
-            value={paymentInfo.upiId}
-            onChange={(e) => handleInputChange('payment', 'upiId', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="yourname@paytm"
-          />
-        </div>
-      )}
-      
-      {paymentMethod === 'netbanking' && (
-        <div className="text-center p-4 bg-blue-50 rounded-lg">
-          <p className="text-blue-800">You will be redirected to your bank's website to complete the payment.</p>
-        </div>
-      )}
-      
-      {paymentMethod === 'cod' && (
-        <div className="text-center p-4 bg-green-50 rounded-lg">
-          <p className="text-green-800">Pay ₹{finalAmount} in cash when our phlebotomist arrives for sample collection.</p>
-        </div>
-      )}
     </div>
   );
 
-  const renderOrderSummary = () => (
+  // Enhanced Order Summary with cart management
+  const OrderSummary = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sticky top-24">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">Order Summary</h2>
-      
-      <div className="space-y-3 mb-4">
-        {cartItems.map((item) => (
-          <div key={`${item.id}-${item.type}`} className="flex justify-between items-start text-sm">
-            <div className="flex-1">
-              <div className="font-medium text-gray-800">{item.name}</div>
-              <div className="text-gray-500">Qty: {item.quantity}</div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-800">Order Summary</h2>
+        <span className="text-sm text-gray-500">({allItems.length} items)</span>
+      </div>
+
+      <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
+        {allItems.map((item, index) => (
+          <div key={index} className="border border-gray-100 rounded-lg p-3">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex-1">
+                <div className="font-medium text-gray-800 text-sm">
+                  {item.name}
+                </div>
+                <div className="text-xs text-gray-500 capitalize">
+                  {item.type === "test" ||
+                  labTests.find((lab) => lab.id === item.id)
+                    ? "Lab Test"
+                    : "Medicine"}
+                </div>
+              </div>
+              <button
+                onClick={() => handleRemoveItem(item)}
+                className="text-red-500 hover:text-red-700 p-1"
+                title="Remove item"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
-            <div className="font-medium">₹{item.price * item.quantity}</div>
+
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleDecreaseQuantity(item)}
+                  disabled={item.quantity <= 1}
+                  className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="text-sm font-medium w-8 text-center">
+                  {item.quantity}
+                </span>
+                <button
+                  onClick={() => handleIncreaseQuantity(item)}
+                  className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50"
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
+              <div className="font-medium text-sm">
+                ₹{item.price * item.quantity}
+              </div>
+            </div>
           </div>
         ))}
       </div>
-      
+
       <div className="border-t border-gray-200 pt-3 space-y-2">
         <div className="flex justify-between text-gray-700">
           <span>Subtotal</span>
           <span>₹{totalAmount}</span>
         </div>
         <div className="flex justify-between text-gray-700">
-          <span>Discount</span>
+          <span>Discount (10%)</span>
           <span className="text-green-600">- ₹{discountAmount}</span>
-        </div>
-        <div className="flex justify-between text-gray-700">
-          <span>Home Collection</span>
-          <span className="text-green-600">FREE</span>
         </div>
         <div className="flex justify-between font-bold text-gray-800 text-lg border-t pt-2">
           <span>Total</span>
           <span>₹{finalAmount}</span>
         </div>
       </div>
-      
-      <div className="mt-4 bg-green-50 border border-green-100 rounded-md p-3">
-        <div className="text-sm text-green-800 font-medium">
-          You're saving ₹{discountAmount} on this order
-        </div>
-      </div>
+
+      {allItems.length > 0 && (
+        <button
+          onClick={clearAllCarts}
+          className="w-full mt-4 px-4 py-2 text-sm text-red-600 border border-red-200 rounded-md hover:bg-red-50"
+        >
+          Clear All Items
+        </button>
+      )}
     </div>
   );
 
   return (
     <div className="max-w-7xl mx-auto p-4 min-h-screen mt-20 mb-10">
       <div className="mb-6">
-        <button 
-          onClick={() => navigate('/cart')}
+        <button
+          onClick={() => navigate("/cart")}
           className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700 mb-4"
         >
           <ArrowLeft size={16} className="mr-1" />
           Back to Cart
         </button>
-        
+
         <h1 className="text-2xl font-bold text-gray-800">Checkout</h1>
-        <p className="text-gray-600 mt-1">Complete your order in few simple steps</p>
+        <p className="text-gray-600 mt-1">
+          Complete your order in few simple steps
+        </p>
       </div>
-      
-      {renderStepIndicator()}
-      
+
+      <StepIndicator />
+
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-2/3">
-          {currentStep === 1 && renderCustomerInfo()}
-          {currentStep === 2 && renderAddressInfo()}
-          {currentStep === 3 && renderAppointmentInfo()}
-          {currentStep === 4 && renderPaymentInfo()}
-          
+          {currentStep === 1 && <PersonalInfoStep />}
+          {currentStep === 2 && <AppointmentStep />}
+          {currentStep === 3 && <PaymentStep />}
+
           <div className="flex justify-between mt-6">
             {currentStep > 1 && (
-              <button 
-                onClick={() => setCurrentStep(prev => prev - 1)}
+              <button
+                onClick={() => setCurrentStep((prev) => prev - 1)}
                 className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50"
               >
                 Previous
               </button>
             )}
-            
-            {currentStep < 4 ? (
-              <button 
+
+            {currentStep < 3 ? (
+              <button
                 onClick={handleNextStep}
                 className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700"
               >
                 Next
               </button>
             ) : (
-              <button 
-                onClick={handlePayment}
-                disabled={!validateStep(4) || isProcessing}
-                className="ml-auto px-6 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isProcessing ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processing...
-                  </div>
+              <div className="ml-auto space-x-3">
+                {formData.paymentMethod === "razorpay" ? (
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={
+                      !validateStep(3) || isProcessing || !razorpayLoaded
+                    }
+                    className="px-6 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {isProcessing ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      `Pay ₹${finalAmount} with Razorpay`
+                    )}
+                  </button>
                 ) : (
-                  `Pay ₹${finalAmount}`
+                  <button
+                    onClick={() => {
+                      const orderData = {
+                        orderId: "ORD" + Date.now(),
+                        items: allItems,
+                        customer: {
+                          userId: formData.userId,
+                          name: user.name,
+                          email: user.email,
+                          phone: user.mobile,
+                          address: user.address,
+                        },
+                        appointment: {
+                          date: formData.date,
+                          timeSlot: formData.timeSlot,
+                        },
+                        payment: {
+                          method: "cod",
+                          amount: finalAmount,
+                          status: "pending",
+                        },
+                        orderDate: new Date().toISOString(),
+                        status: "confirmed",
+                      };
+
+                      // Clear all carts for COD as well
+                      clearAllCarts();
+
+                      navigate("/order-success", { state: { orderData } });
+                    }}
+                    disabled={!validateStep(3)}
+                    className="px-6 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 disabled:opacity-50"
+                  >
+                    Place Order (COD)
+                  </button>
                 )}
-              </button>
+              </div>
             )}
           </div>
         </div>
-        
+
         <div className="lg:w-1/3">
-          {renderOrderSummary()}
+          <OrderSummary />
         </div>
       </div>
     </div>

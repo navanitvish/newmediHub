@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { 
-  Search, 
+  Camera, 
+  Smartphone, 
   ShoppingCart, 
   Clock, 
   Truck, 
@@ -10,7 +11,9 @@ import {
   Phone, 
   ShoppingBag, 
   Sparkles, 
-  ChevronRight 
+  ChevronRight,
+  Upload,
+  ShieldCheck 
 } from 'lucide-react';
 
 // Components
@@ -25,32 +28,19 @@ import { SkinCarebrand } from './SkinCarebrand';
 import { Miniumoff } from './Miniumoff';
 import Brand from './brand';
 import PharmaciesNearYou from './PharmaciesNearYou';
-
-// Redux
-import { addToCart } from '../../redux/slices/cartSlice';
-import { selectAllProducts, filterByCategory } from '../../redux/slices/productsSlice';
-import Womanwellness from '../../components/UI/PackageCard';
 import { WomanWellness } from './WomanWellness';
+import { selectMedicineTotalQuantity } from '../../redux/slices/medicineSlice';
 
 const Medifarma = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  const products = useSelector(selectAllProducts);
-  const cartCount = useSelector(state => state.cart.totalItems);
-
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
-  };
-
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    dispatch(filterByCategory(category));
-  };
+ const medicineQuantity = useSelector(selectMedicineTotalQuantity) || 0;
 
   const handleSearch = () => {
     navigate('/search');
+  };
+
+  const handlePrescriptionUpload = () => {
+    navigate('/prescription-upload');
   };
 
   const trustIndicators = [
@@ -230,6 +220,56 @@ const Medifarma = () => {
           </div>
         </section>
 
+        {/* Upload Prescription Section */}
+        <section className="max-w-7xl mx-auto px-4 py-12">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-400">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <div className="flex items-center mb-4">
+                  <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-3 rounded-full mr-4">
+                    <Upload className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Upload Your Prescription</h2>
+                </div>
+                
+                <p className="text-gray-600 mb-6 text-lg">
+                  Get tests recommended by your doctor. Upload your prescription and we'll help you find the right tests at the best prices.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <button 
+                    onClick={handlePrescriptionUpload}
+                    className="flex items-center justify-center bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                  >
+                    <Camera className="w-5 h-5 mr-2" />
+                    Take Photo
+                  </button>
+                  <button 
+                    onClick={handlePrescriptionUpload}
+                    className="flex items-center justify-center bg-white text-blue-500 border-2 border-blue-500 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 font-medium"
+                  >
+                    <Smartphone className="w-5 h-5 mr-2" />
+                    Upload from Gallery
+                  </button>
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-500">
+                  <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
+                  <span>Your prescription is safe and secure with us</span>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <img
+                  src="https://plus.unsplash.com/premium_photo-1682141140357-4283cd7aae8b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzI1fHxkb2N0b3J8ZW58MHx8MHx8fDA%3D"
+                  alt="Doctor with prescription"
+                  className="rounded-xl shadow-lg w-full h-64 object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Main Content Sections */}
         <HealthConditionsBrowser />
         <Miniumoff />
@@ -267,7 +307,7 @@ const Medifarma = () => {
         <DiebetesManagement />
         <SkinCarebrand />
         <PopularLabTests />
-        <WomanWellness/>
+        <WomanWellness />
 
         {/* Promotional Banners */}
         <div className="max-w-7xl mx-auto px-4 space-y-6">
@@ -292,9 +332,9 @@ const Medifarma = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg flex items-center justify-center transition-colors"
           >
             <ShoppingCart size={24} />
-            {cartCount > 0 && (
+            {medicineQuantity > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
-                {cartCount}
+                {medicineQuantity}
               </span>
             )}
           </Link>

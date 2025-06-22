@@ -1,41 +1,28 @@
 // File: src/pages/LabTestsPage.js
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice';
+import { useNavigate } from 'react-router-dom';
+import { addLabTest } from '../../redux/slices/labTestSlice';
 import { 
   ChevronRight, ChevronLeft, Upload, FileText, Search, 
-  Calendar, MapPin, Activity, ShieldCheck, Clock, Award, User , Heart,
-  Thermometer,
-  Droplet,
-  ShieldPlus,
-  Syringe,
+  Calendar, MapPin, Activity, ShieldCheck, Clock, Award, User, Heart,
+  Thermometer, Droplet, ShieldPlus, Syringe, Camera, Smartphone
 } from 'lucide-react';
 
-import {  popularPackages, topBookedTests, healthBlogs } from '../../data/testData';
-
+import { topBookedTests } from '../../data/testData';
 import PackageCard from '../../components/UI/PackageCard';
 import ImageCarousel from '../../components/UI/ImageCarousel';
-// import HealthCheckup from '../../pages/Healthcheckup';
 import TestCard from '../../components/UI/TestCard';
 import DiagnosticTests from './DiagnosticTests';
 import TopBookedTests from './topBookedTests';
-import HealthCheckupPackages from './HealthCheckup';
 import HealthCheckups from './HealthCheckup';
-import Womanwellness from '../../components/UI/PackageCard';
-
 import HealthCategoriesPage from './HealthCategoriesPage';
 
-
 export default function LabTestsPage() {
-  // State management
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-
   const [currentTestSlide, setCurrentTestSlide] = useState(0);
-  const [currentBlogSlide, setCurrentBlogSlide] = useState(0);
-  const [selectedCity, setSelectedCity] = useState('Delhi');
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('tests');
 
   const labBenefits = [
     {
@@ -64,27 +51,36 @@ export default function LabTestsPage() {
     }
   ];
 
-  // Function to add item to cart
+  const healthCategories = [
+    { id: 1, name: "Diabetes", icon: <Droplet size={20} /> },
+    { id: 2, name: "Thyroid", icon: <ShieldPlus size={20} /> },
+    { id: 3, name: "Full Body Checkup", icon: <User size={20} /> },
+    { id: 4, name: "Fever", icon: <Thermometer size={20} /> },
+    { id: 5, name: "Heart", icon: <Heart size={20} color="red" /> },
+    { id: 6, name: "Women's Health", icon: <Syringe size={20} /> },
+    { id: 7, name: "Men's Health", icon: <FileText size={20} /> },
+    { id: 8, name: "Covid-19", icon: <Thermometer size={20} /> }
+  ];
+
+  // Event Handlers
   const handleAddToCart = (item) => {
-    dispatch(addToCart({ ...item, type: item.testsIncluded ? 'package' : 'test' }));
-    // Show confirmation message
+    dispatch(addLabTest({ ...item, type: item.testsIncluded ? 'package' : 'test' }));
     alert(`Added ${item.name} to cart!`);
   };
 
-  // Function to handle search
   const handleSearch = (e) => {
     e.preventDefault();
     alert(`Searching for: ${searchQuery}`);
-    // In a real application, you would filter results based on the search query
   };
 
-  // Function to handle category click
   const handleCategoryClick = (category) => {
     alert(`Selected category: ${category.name}`);
-    // In a real application, you would navigate to category page or filter results
   };
 
-  // Functions to handle carousel navigation
+  const handlePrescriptionUpload = () => {
+    navigate('/prescription-upload');
+  };
+
   const slideTestsLeft = () => {
     setCurrentTestSlide(Math.max(0, currentTestSlide - 1));
   };
@@ -93,49 +89,8 @@ export default function LabTestsPage() {
     setCurrentTestSlide(Math.min(topBookedTests.length - 3, currentTestSlide + 1));
   };
 
-
-  const slideBlogsLeft = () => {
-    setCurrentBlogSlide(Math.max(0, currentBlogSlide - 1));
-  };
-
-  const slideBlogsRight = () => {
-    setCurrentBlogSlide(Math.min(healthBlogs.length - 3, currentBlogSlide + 1));
-  };
-
-  // Function to handle file upload
-  const handleFileUpload = () => {
-    // In a real application, this would open a file dialog
-    alert("Upload prescription functionality would open here");
-  };
-// packeggin handdler
-
-  const handlePackageClick = (packageItem) => {
-    // In a real application, this would navigate to the package details page
-    alert(`Navigating to package details for ${packageItem.name}`);
-  };
-  
-
-
-  // Function to view reports
-  const viewReports = () => {
-    // In a real application, this would navigate to reports page
-    alert("Navigating to reports page");
-  };
-
-  // Health condition categories
- const healthCategories = [
-  { id: 1, name: "Diabetes", icon: <Droplet size={20} /> },
-  { id: 2, name: "Thyroid", icon: <ShieldPlus size={20} /> },
-  { id: 3, name: "Full Body Checkup", icon: <User size={20} /> },
-  { id: 4, name: "Fever", icon: <Thermometer size={20} /> },
-  { id: 5, name: "Heart", icon: <Heart size={20} color="red" /> },
-  { id: 6, name: "Women's Health", icon: <Syringe size={20} /> },
-  { id: 7, name: "Men's Health", icon: <FileText size={20} /> },
-  { id: 8, name: "Covid-19", icon: <Thermometer size={20} /> }
-];
-
   return (
-    <div className=" bg-gray-50">
+    <div className="bg-gray-50">
       {/* Hero Section */}
      <section className="relative overflow-hidden bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700">
       {/* Background Elements */}
@@ -270,25 +225,71 @@ export default function LabTestsPage() {
       </div>
     </section>
 
-   
-
-    <section className="max-w-7xl mx-auto px-4 mt-8">
-    <HealthCategoriesPage/>
-
-    </section>
-
-
-    
-
-       <TopBookedTests/>
-
-         <section className="max-w-7xl mx-auto px-4 mt-8">
-         <HealthCheckups/>
+      {/* Upload Prescription Section */}
+      <section className="max-w-7xl mx-auto px-4 py-12">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-400">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700  p-3 rounded-full mr-4">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">Upload Your Prescription</h2>
+              </div>
+              
+              <p className="text-gray-600 mb-6 text-lg">
+                Get tests recommended by your doctor. Upload your prescription and we'll help you find the right tests at the best prices.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <button 
+                  onClick={handlePrescriptionUpload}
+                  className="flex items-center justify-center bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium"
+                >
+                  <Camera className="w-5 h-5 mr-2" />
+                  Take Photo
+                </button>
+                <button 
+                  onClick={handlePrescriptionUpload}
+                  className="flex items-center justify-center bg-white text-blue-500 border-2 border-blue-500 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 font-medium"
+                >
+                  <Smartphone className="w-5 h-5 mr-2" />
+                  Upload from Gallery
+                </button>
+              </div>
+              
+              <div className="flex items-center text-sm text-gray-500">
+                <ShieldCheck className="w-4 h-4 mr-2 text-green-500" />
+                <span>Your prescription is safe and secure with us</span>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <img
+                src="https://plus.unsplash.com/premium_photo-1682141140357-4283cd7aae8b?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzI1fHxkb2N0b3J8ZW58MHx8MHx8fDA%3D"
+                alt="Doctor with prescription"
+                className="rounded-xl shadow-lg w-full h-64 object-cover"
+              />
+              {/* <div className="absolute inset-0 bg-blue-500 bg-opacity-10 rounded-xl"></div> */}
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* <TestCardsSlider/> */}
-
       {/* Health Categories */}
+      <section className="max-w-7xl mx-auto px-4 mt-8">
+        <HealthCategoriesPage />
+      </section>
+
+      {/* Top Booked Tests */}
+      <TopBookedTests />
+
+      {/* Health Checkups */}
+      <section className="max-w-7xl mx-auto px-4 mt-8">
+        <HealthCheckups />
+      </section>
+
+      {/* Health Categories Grid */}
       <section className="max-w-7xl mx-auto px-4 py-10">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Health Categories</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
@@ -304,15 +305,16 @@ export default function LabTestsPage() {
           ))}
         </div>
       </section>
-      <ImageCarousel/>
-    
 
-         {/* Top Booked Tests */}
+      {/* Image Carousel */}
+      <ImageCarousel />
+
+      {/* Test Cards */}
       <section className="max-w-7xl mx-auto px-4 mt-8">
-      <TestCard/>
+        <TestCard />
       </section>
 
-      {/* Top Booked Lab Tests */}
+      {/* Top Booked Lab Tests Slider */}
       <section className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800">Top Booked Lab Tests</h2>
@@ -343,15 +345,15 @@ export default function LabTestsPage() {
                   <h3 className="font-medium text-gray-800">{test.name}</h3>
                 </div>
                 
-                <div className="mb-3">
-                  <div className="flex items-center text-sm text-gray-600 mb-1">
+                <div className="mb-3 space-y-1">
+                  <div className="flex items-center text-sm text-gray-600">
                     <span>Sample: {test.sampleType}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 mb-1">
+                  <div className="flex items-center text-sm text-gray-600">
                     <Clock size={16} className="mr-1" />
                     <span>Report in {test.reportHours} hours</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600 mb-1">
+                  <div className="flex items-center text-sm text-gray-600">
                     <span>Fasting: {test.fastingRequired ? 'Required' : 'Not Required'}</span>
                   </div>
                 </div>
@@ -378,12 +380,26 @@ export default function LabTestsPage() {
           ))}
         </div>
       </section>
-       {/* image div for banner */}
-      <div className="max-w-7xl mx-auto rounded-2xl ">
-      <img src="https://images.apollo247.in/pd-cms/cms/2023-09/Diag_Web_Desktop.jpg?tr=q-80,f-webp,w-1300,dpr-2,c-at_max" alt="bnner" srcset=""
-        className='w-full rounded-2xl '
-      />
 
+      {/* Banner Images */}
+      <div className="max-w-7xl mx-auto px-4 space-y-8">
+        <img 
+          src="https://images.apollo247.in/pd-cms/cms/2023-09/Diag_Web_Desktop.jpg?tr=q-80,f-webp,w-1300,dpr-2,c-at_max" 
+          alt="Diagnostic Banner" 
+          className="w-full rounded-2xl"
+        />
+        
+        <img 
+          src="https://images.apollo247.in/images/banners/radoilogy-banner.png?tr=q-60,f-webp,w-1300,dpr-2,c-at_max" 
+          alt="Radiology Banner" 
+          className="w-full rounded-2xl"
+        />
+        
+        <img 
+          src="https://images.apollo247.in/images/category/certified_banner_web_updated.png?tr=q-80,f-webp,w-1300,dpr-2,c-at_max" 
+          alt="Certified Banner" 
+          className="w-full rounded-2xl"
+        />
       </div>
 
       {/* Why Choose HealthLabs */}
@@ -402,35 +418,16 @@ export default function LabTestsPage() {
           </div>
         </div>
       </section>
-      
-             {/* image div for banner */}
-      <div className="max-w-7xl mx-auto rounded-2xl ">
-      <img src="https://images.apollo247.in/images/banners/radoilogy-banner.png?tr=q-60,f-webp,w-1300,dpr-2,c-at_max" alt="bnner" srcset=""
-        className='w-full rounded-2xl '
-      />
 
-      </div>
-
-      {/* Health Blogs */}
+      {/* Diagnostic Tests */}
       <section className="max-w-7xl mx-auto px-4 py-10">
-       <DiagnosticTests/>
+        <DiagnosticTests />
       </section>
 
-             {/* image div for banner */}
-      <div className="max-w-7xl mx-auto rounded-2xl ">
-      <img src="https://images.apollo247.in/images/category/certified_banner_web_updated.png?tr=q-80,f-webp,w-1300,dpr-2,c-at_max" alt="bnner" srcset=""
-        className='w-full rounded-2xl '
-      />
-
-      </div>
-
-     
-
+      {/* Package Card Section */}
       <section>
-        <Womanwellness/>
+        <PackageCard />
       </section>
-
-     
 
       {/* App Download Banner */}
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 py-12">
@@ -442,17 +439,17 @@ export default function LabTestsPage() {
                 Book tests, track orders, view reports, and get health insights on your mobile device.
               </p>
               <div className="flex space-x-4">
-                <button className="bg-black text-white px-4 py-2 rounded-lg flex items-center">
+                <button className="bg-black text-white px-4 py-2 rounded-lg flex items-center hover:bg-gray-800 transition">
                   <span className="mr-2">App Store</span>
                 </button>
-                <button className="bg-black text-white px-4 py-2 rounded-lg flex items-center">
+                <button className="bg-black text-white px-4 py-2 rounded-lg flex items-center hover:bg-gray-800 transition">
                   <span className="mr-2">Google Play</span>
                 </button>
               </div>
             </div>
             <div className="md:w-1/3">
               <img 
-                src="/api/placeholder/300/600" 
+                src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
                 alt="Mobile app screenshot" 
                 className="rounded-xl max-w-full h-auto max-h-80"
               />
@@ -461,12 +458,14 @@ export default function LabTestsPage() {
         </div>
       </section>
 
-      <div className="fixed bottom-6 right-6">
-        <button className="flex items-center bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      {/* Floating Call Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button className="flex flex-col items-center bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg hover:bg-orange-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
           </svg>
-          CALL TO BOOK<br />08045572851
+          <span className="text-xs font-medium">CALL TO BOOK</span>
+          <span className="text-xs">08045572851</span>
         </button>
       </div>
     </div>

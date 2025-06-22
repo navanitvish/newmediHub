@@ -1,20 +1,19 @@
 import { useDispatch } from 'react-redux';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
-import { addToCart } from '../../redux/slices/cartSlice';
+import { addMedicine } from '../../redux/slices/medicineSlice';
 import { useQuery } from '@tanstack/react-query';
 
 export const TopSellingProducts = () => {
   const dispatch = useDispatch();
   
   const handleAddToCart = (product) => {
-    dispatch(addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.discountPrice,
-      image: product.image,
-      quantity: 1,
-      manufacturer: product.manufacturer,
-      unit: product.unit
+    dispatch(addMedicine({
+             id: product.id || product._id,
+      name: product.name || product.title,
+      originalPrice: product.originalPrice || product.price,
+      price: product.discountPrice || product.price,
+      image: product.image || (product.images && product.images[0]) || '/api/placeholder/120/120',
+      quantity: 1
     }));
   };
 

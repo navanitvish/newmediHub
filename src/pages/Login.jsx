@@ -8,12 +8,12 @@ const Login = () => {
   
   // Redirect if already authenticated
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   return (
     <div className="">
-      <div className="px-4 py-12 sm:px-6 lg:px-8">
+      <div className="">
         <LoginForm />
       </div>
     </div>
