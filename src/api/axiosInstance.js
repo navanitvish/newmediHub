@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'https://medisewa.onrender.com';
+const baseURL = 'https://medisawabackend.onrender.com';
 
 const axiosInstance = axios.create({
   baseURL,
