@@ -99,19 +99,6 @@ const SimpleFAQ = () => {
           </div>
         ))}
       </div>
-
-      {/* Contact Section */}
-      <div className="mt-16 text-center bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-4">
-          Still have questions?
-        </h3>
-        <p className="text-gray-600 mb-6">
-          Our support team is here to help you 24/7
-        </p>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors duration-200">
-          Contact Support
-        </button>
-      </div>
     </div>
   );
 };

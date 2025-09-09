@@ -1,45 +1,60 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Search, Filter, MapPin, Star, Clock, Video, Calendar, ArrowLeft } from 'lucide-react';
-
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Search,
+  Filter,
+  MapPin,
+  Star,
+  Clock,
+  Video,
+  Calendar,
+  ArrowLeft,
+} from "lucide-react";
 
 export default function ConsultationRouteHandler() {
   // Get specialty ID from URL parameters
   const { specialtyId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
+  const [paymentComplete, setPaymentComplete] = useState(false);
+
   // Get specialty information from navigation state if available
-  const specialtyName = location.state?.specialtyName || 'Specialists';
-  
-  const [searchTerm, setSearchTerm] = useState('');
+  const specialtyName = location.state?.specialtyName || "Specialists";
+
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    experience: '',
-    rating: '',
-    consultationFee: '',
-    availability: '',
-    consultationType: ''
+    experience: "",
+    rating: "",
+    consultationFee: "",
+    availability: "",
+    consultationType: "",
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState("relevance");
 
   // Fetch doctors by specialty using the API
-  const { data: doctorsResponse, isLoading, error, refetch } = useQuery({
-    queryKey: ['doctors', specialtyId],
+  const {
+    data: doctorsResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["doctors", specialtyId],
     queryFn: async () => {
       if (!specialtyId) {
-        throw new Error('Specialty ID is required');
+        throw new Error("Specialty ID is required");
       }
-      
+
       const response = await fetch(
-        `https://medisewa.onrender.com/api/v1/doctors/search/${specialtyId}?type=Specialist`
+        `https://medisawabackend.onrender.com/api/v1/doctors/search/${specialtyId}?type=Specialist`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch doctors: ${response.status}`);
       }
-      
+
       return response.json();
     },
     enabled: !!specialtyId,
@@ -52,67 +67,75 @@ export default function ConsultationRouteHandler() {
   console.log(doctors);
   // i want to get doctor userID
   const user = doctors[0]?.userId;
-  console.log(user)
-  
-  
+  console.log(user);
 
   // Helper function to safely convert specialization to searchable string
   const getSpecializationString = (specialization) => {
-    if (!specialization) return '';
-    if (typeof specialization === 'string') return specialization;
+    if (!specialization) return "";
+    if (typeof specialization === "string") return specialization;
     if (specialization.name) return specialization.name;
-    if (Array.isArray(specialization)) return specialization.join(' ');
+    if (Array.isArray(specialization)) return specialization.join(" ");
     return String(specialization);
   };
 
   // Helper function to display specialization properly
   const displaySpecialization = (specialization) => {
-    if (!specialization) return '';
-    if (typeof specialization === 'string') return specialization;
+    if (!specialization) return "";
+    if (typeof specialization === "string") return specialization;
     if (specialization.name) return specialization.name;
-    if (Array.isArray(specialization)) return specialization.join(', ');
+    if (Array.isArray(specialization)) return specialization.join(", ");
     return String(specialization);
   };
 
   // Filter doctors based on search term and filters
-  const filteredDoctors = doctors.filter(doctor => {
-    const matchesSearch = doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         getSpecializationString(doctor.specialization).toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doctor.bio?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredDoctors = doctors.filter((doctor) => {
+    const matchesSearch =
+      doctor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getSpecializationString(doctor.specialization)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      doctor.bio?.toLowerCase().includes(searchTerm.toLowerCase());
+
     let matchesFilters = true;
-    
+
     if (filters.experience) {
-      const expRange = filters.experience.split('-');
+      const expRange = filters.experience.split("-");
       if (expRange.length === 2 && doctor.experience) {
-        matchesFilters = matchesFilters && doctor.experience >= parseInt(expRange[0]) && doctor.experience <= parseInt(expRange[1]);
+        matchesFilters =
+          matchesFilters &&
+          doctor.experience >= parseInt(expRange[0]) &&
+          doctor.experience <= parseInt(expRange[1]);
       }
     }
-    
+
     if (filters.rating && doctor.rating) {
-      matchesFilters = matchesFilters && doctor.rating >= parseFloat(filters.rating);
+      matchesFilters =
+        matchesFilters && doctor.rating >= parseFloat(filters.rating);
     }
-    
+
     if (filters.consultationFee && doctor.fee) {
-      const feeRange = filters.consultationFee.split('-');
+      const feeRange = filters.consultationFee.split("-");
       if (feeRange.length === 2) {
-        matchesFilters = matchesFilters && doctor.fee >= parseInt(feeRange[0]) && doctor.fee <= parseInt(feeRange[1]);
+        matchesFilters =
+          matchesFilters &&
+          doctor.fee >= parseInt(feeRange[0]) &&
+          doctor.fee <= parseInt(feeRange[1]);
       }
     }
-    
+
     return matchesSearch && matchesFilters;
   });
 
   // Sort doctors based on selected sort option
   const sortedDoctors = [...filteredDoctors].sort((a, b) => {
     switch (sortBy) {
-      case 'rating':
+      case "rating":
         return (b.rating || 0) - (a.rating || 0);
-      case 'experience':
+      case "experience":
         return (b.experience || 0) - (a.experience || 0);
-      case 'fee-low':
+      case "fee-low":
         return (a.fee || 0) - (b.fee || 0);
-      case 'fee-high':
+      case "fee-high":
         return (b.fee || 0) - (a.fee || 0);
       default:
         return 0;
@@ -120,19 +143,19 @@ export default function ConsultationRouteHandler() {
   });
 
   const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
   };
 
   const clearFilters = () => {
     setFilters({
-      experience: '',
-      rating: '',
-      consultationFee: '',
-      availability: '',
-      consultationType: ''
+      experience: "",
+      rating: "",
+      consultationFee: "",
+      availability: "",
+      consultationType: "",
     });
   };
 
@@ -143,33 +166,89 @@ export default function ConsultationRouteHandler() {
       id: doctor._id,
       userId: doctor.userId,
       name: doctor.name,
-      image: doctor.image || '/api/placeholder/400/400',
+      image: doctor.image || "/api/placeholder/400/400",
       specialty: displaySpecialization(doctor.specialization),
-      experience: doctor.experience ? `${doctor.experience}+ years` : 'Not specified',
+      experience: doctor.experience
+        ? `${doctor.experience}+ years`
+        : "Not specified",
       rating: doctor.rating || 0,
       reviews: doctor.reviewCount || 0,
-      location: doctor.clinicAddress || doctor.address || 'Location not specified',
-      education: doctor.education || doctor.qualifications || 'Not specified',
-      bio: doctor.bio || '',
-      consultationFee: doctor.fee ? `₹${doctor.fee}` : 'Not specified',
-      specializations: Array.isArray(doctor.specializations) 
-        ? doctor.specializations 
-        : doctor.specializations 
-          ? [doctor.specializations] 
-          : [displaySpecialization(doctor.specialization)].filter(Boolean),
+      location:
+        doctor.clinicAddress || doctor.address || "Location not specified",
+      education: doctor.education || doctor.qualifications || "Not specified",
+      bio: doctor.bio || "",
+      consultationFee: doctor.fee ? `₹${doctor.fee}` : "Not specified",
+      specializations: Array.isArray(doctor.specializations)
+        ? doctor.specializations
+        : doctor.specializations
+        ? [doctor.specializations]
+        : [displaySpecialization(doctor.specialization)].filter(Boolean),
     };
 
     // Navigate to booking page with doctor data
-    navigate(`/booking/${doctor._id}/${user}`, { 
-      state: { 
+    navigate(`/booking/${doctor._id}/${user}`, {
+      state: {
         doctor: doctorData,
         consultationType: consultationType,
         fromSpecialty: specialtyName,
         specialtyId: specialtyId,
-      
-      }
+      },
     });
   };
+
+  // Handle video call booking
+  const handleVideoCall = (doctor, consultationType) => {
+    const doctorData = {
+      id: doctor._id,
+      userId: doctor.userId,
+      name: doctor.name,
+      image: doctor.image || "/api/placeholder/400/400",
+      specialty: displaySpecialization(doctor.specialization),
+      experience: doctor.experience
+        ? `${doctor.experience}+ years`
+        : "Not specified",
+      rating: doctor.rating || 0,
+      reviews: doctor.reviewCount || 0,
+      location:
+        doctor.clinicAddress || doctor.address || "Location not specified",
+      education: doctor.education || doctor.qualifications || "Not specified",
+      bio: doctor.bio || "",
+      consultationFee: doctor.fee || 0,
+      specializations: Array.isArray(doctor.specializations)
+        ? doctor.specializations
+        : doctor.specializations
+        ? [doctor.specializations]
+        : [displaySpecialization(doctor.specialization)].filter(Boolean),
+    };
+console.log("doctorData", doctorData);
+    // Make sure 'user' is defined (e.g., user ID or username)
+    if (!user) {
+      alert("User information missing. Cannot initiate video call.");
+      return;
+    }
+
+    navigate(`/video-call/${doctor._id}/${user}`, {
+      state: {
+        doctor: doctorData,
+        consultationType,
+        fromSpecialty: specialtyName,
+        specialtyId: specialtyId,
+      },
+    });
+  };
+
+  // Handle audio call booking
+  // const handleAudioCall = (doctorId, consultationType) => {
+  //   // Navigate to audio call booking page
+  //   navigate(`/audio-call/${doctorId}/${user}`, {
+  //     state: {
+  //       doctorId: doctorId,
+  //       consultationType: consultationType,
+  //       fromSpecialty: specialtyName,
+  //       specialtyId: specialtyId,
+  //     },
+  //   });
+  // };
 
   const goBack = () => {
     navigate(-1);
@@ -192,8 +271,10 @@ export default function ConsultationRouteHandler() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Error loading doctors: {error.message}</p>
-          <button 
+          <p className="text-red-600 mb-4">
+            Error loading doctors: {error.message}
+          </p>
+          <button
             onClick={() => refetch()}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -218,18 +299,23 @@ export default function ConsultationRouteHandler() {
               <span>Back to Specialties</span>
             </button>
           </div>
-          
+
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 {specialtyName} Specialists
               </h1>
-              <p className="text-gray-600 mt-1">Book appointments with verified doctors</p>
+              <p className="text-gray-600 mt-1">
+                Book appointments with verified doctors
+              </p>
             </div>
-            
+
             {/* Search Bar */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search doctors, conditions..."
@@ -256,14 +342,22 @@ export default function ConsultationRouteHandler() {
                   <Filter size={16} />
                 </button>
               </div>
-              
-              <div className={`space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+
+              <div
+                className={`space-y-6 ${
+                  showFilters ? "block" : "hidden lg:block"
+                }`}
+              >
                 {/* Experience Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Experience
+                  </label>
                   <select
                     value={filters.experience}
-                    onChange={(e) => handleFilterChange('experience', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("experience", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Any Experience</option>
@@ -276,10 +370,14 @@ export default function ConsultationRouteHandler() {
 
                 {/* Rating Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rating
+                  </label>
                   <select
                     value={filters.rating}
-                    onChange={(e) => handleFilterChange('rating', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("rating", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Any Rating</option>
@@ -291,10 +389,14 @@ export default function ConsultationRouteHandler() {
 
                 {/* Consultation Fee Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Consultation Fee</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Consultation Fee
+                  </label>
                   <select
                     value={filters.consultationFee}
-                    onChange={(e) => handleFilterChange('consultationFee', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("consultationFee", e.target.value)
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Any Fee</option>
@@ -321,11 +423,13 @@ export default function ConsultationRouteHandler() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
                 Available Doctors
-                <span className="text-gray-500 font-normal ml-2">({sortedDoctors.length} found)</span>
+                <span className="text-gray-500 font-normal ml-2">
+                  ({sortedDoctors.length} found)
+                </span>
               </h2>
-              
+
               {/* Sort Options */}
-              <select 
+              <select
                 className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -345,17 +449,24 @@ export default function ConsultationRouteHandler() {
                   <div className="text-gray-400 mb-4">
                     <Search size={48} className="mx-auto" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No doctors found</h3>
-                  <p className="text-gray-600">Try adjusting your search criteria or filters</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No doctors found
+                  </h3>
+                  <p className="text-gray-600">
+                    Try adjusting your search criteria or filters
+                  </p>
                 </div>
               ) : (
                 sortedDoctors.map((doctor) => (
-                  <div key={doctor._id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                  <div
+                    key={doctor._id}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                  >
                     <div className="flex flex-col md:flex-row gap-6">
                       {/* Doctor Image */}
                       <div className="md:w-32 md:h-32 w-24 h-24 flex-shrink-0">
                         <img
-                          src={doctor.image || '/api/placeholder/400/400'}
+                          src={doctor.image || "/api/placeholder/400/400"}
                           alt={doctor.name}
                           className="w-full h-full rounded-lg object-cover"
                         />
@@ -368,33 +479,44 @@ export default function ConsultationRouteHandler() {
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
                               {doctor.name}
                             </h3>
-                            
+
                             <div className="space-y-2 mb-4">
                               <p className="text-blue-600 font-medium">
                                 {displaySpecialization(doctor.specialization)}
                               </p>
-                              
+
                               <div className="flex items-center gap-4 text-sm text-gray-600">
                                 <div className="flex items-center gap-1">
                                   <Clock size={16} />
-                                  <span>{doctor.experience ? `${doctor.experience}+ years` : 'Experience not specified'}</span>
+                                  <span>
+                                    {doctor.experience
+                                      ? `${doctor.experience}+ years`
+                                      : "Experience not specified"}
+                                  </span>
                                 </div>
-                                
+
                                 {doctor.rating && (
                                   <div className="flex items-center gap-1">
-                                    <Star size={16} className="text-yellow-400 fill-current" />
+                                    <Star
+                                      size={16}
+                                      className="text-yellow-400 fill-current"
+                                    />
                                     <span>{doctor.rating}</span>
                                     {doctor.reviewCount && (
-                                      <span className="text-gray-400">({doctor.reviewCount} reviews)</span>
+                                      <span className="text-gray-400">
+                                        ({doctor.reviewCount} reviews)
+                                      </span>
                                     )}
                                   </div>
                                 )}
                               </div>
-                              
+
                               {(doctor.clinicAddress || doctor.address) && (
                                 <div className="flex items-center gap-1 text-sm text-gray-600">
                                   <MapPin size={16} />
-                                  <span>{doctor.clinicAddress || doctor.address}</span>
+                                  <span>
+                                    {doctor.clinicAddress || doctor.address}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -410,29 +532,63 @@ export default function ConsultationRouteHandler() {
                           <div className="md:text-right">
                             <div className="mb-4">
                               <span className="text-2xl font-bold text-gray-900">
-                                {doctor.fee ? `₹${doctor.fee}` : 'Fee not specified'}
+                                {doctor.fee
+                                  ? `₹${doctor.fee}`
+                                  : "Fee not specified"}
                               </span>
                               {doctor.fee && (
-                                <p className="text-sm text-gray-600">Consultation fee</p>
+                                <p className="text-sm text-gray-600">
+                                  Consultation fee
+                                </p>
                               )}
                             </div>
 
                             <div className="space-y-2">
-                              <button
-                                onClick={() => handleBookConsultation(doctor, 'video')}
-                                className="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                              >
-                                <Video size={16} />
-                                Book online Appointment
-                              </button>
-                              
-                              <button
-                                onClick={() => handleBookConsultation(doctor, 'clinic')}
-                                className="w-full md:w-auto bg-white text-blue-600 border border-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
-                              >
-                                <Calendar size={16} />
-                                Book Clinic Visit Appointment
-                              </button>
+                              {paymentComplete ? (
+                                // Show video call button after payment completion
+                                <button
+                                  onClick={() =>
+                                    handleVideoCall(doctor, "video")
+                                  }
+                                  className="w-full md:w-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <Video size={16} />
+                                  Start Video Call with Dr. {doctor.name}
+                                </button>
+                              ) : (
+                                // Show booking buttons before payment
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleVideoCall(doctor, "video")
+                                    }
+                                    className="w-full md:w-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    <Video size={16} />
+                                    Start Video Call with Dr. {doctor.name}
+                                  </button>
+
+                                  {/* <button
+                                    onClick={() =>
+                                      handleBookConsultation(doctor, "video")
+                                    }
+                                    className="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    <Video size={16} />
+                                    Book online Appointment
+                                  </button> */}
+
+                                  <button
+                                    onClick={() =>
+                                      handleBookConsultation(doctor, "clinic")
+                                    }
+                                    className="w-full md:w-auto bg-white text-blue-600 border border-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    <Calendar size={16} />
+                                    Book Clinic Visit Appointment
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>

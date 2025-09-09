@@ -30,7 +30,7 @@ const HealthCategoriesPage = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['healthCategories'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/packages/pagination?page=1&limit=10');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/packages/pagination?page=1&limit=10');
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }

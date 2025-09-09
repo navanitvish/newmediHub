@@ -1,15 +1,9 @@
-
-
-
-
-
 import { useDispatch } from 'react-redux';
 import { ProductCarousel } from "../../components/UI/ProductCarousel";
 import { addMedicine } from '../../redux/slices/medicineSlice';
 import { useQuery } from '@tanstack/react-query';
 export const DiebetesManagement = () => {
   const dispatch = useDispatch();
-  
   const handleAddToCart = (product) => {
     dispatch(addMedicine({
       id: product.id || product._id,
@@ -24,7 +18,7 @@ export const DiebetesManagement = () => {
   const { data: apiResponse, isLoading, error } = useQuery({
     queryKey: ['CetegoriesWiseMedicines'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/medicines/categoriesWiseMedicines');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/medicines/categoriesWiseMedicines');
       if (!response.ok) {
         throw new Error('Failed to fetch Category wise medicines');
       }

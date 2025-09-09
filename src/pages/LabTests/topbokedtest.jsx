@@ -11,7 +11,7 @@ export default function TopBookedTests() {
   const { data: topLabBookedData, isLoading, error } = useQuery({
     queryKey: ['topMustLab'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/labs/topMustLab');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/labs/topMustLab');
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }

@@ -10,7 +10,7 @@ export const Miniumoff = () => {
   const { data: apiResponse, isLoading, error } = useQuery({
     queryKey: ['offerMedicines'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/medicines/offer');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/medicines/offer');
       if (!response.ok) {
         throw new Error('Failed to fetch offer medicines');
       }

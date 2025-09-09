@@ -227,7 +227,7 @@ const CategoryPage = () => {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['package', categoryId],
     queryFn: async () => {
-      const response = await fetch(`https://medisewa.onrender.com/api/v1/packages/getOne/${categoryId}`);
+      const response = await fetch(`https://medisawabackend.onrender.com/api/v1/packages/getOne/${categoryId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch package: ${response.status} ${response.statusText}`);
       }

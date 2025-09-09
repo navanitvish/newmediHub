@@ -17,7 +17,7 @@ export default function BrandShowcase() {
   const { data: brandResponse, isLoading, error } = useQuery({
     queryKey: ['brands'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/brands/getAll');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/brands/getAll');
       if (!response.ok) {
         throw new Error('Failed to fetch brands');
       }

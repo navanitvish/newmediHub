@@ -278,24 +278,6 @@ const ModernTestimonials = () => {
             </div>
           ))}
         </div>
-
-        {/* Bottom Stats */}
-        <div className="text-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl font-black text-gray-900 mb-2">50,000+</div>
-              <div className="text-gray-600 font-medium">Happy Patients</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-gray-900 mb-2">4.9/5</div>
-              <div className="text-gray-600 font-medium">Average Rating</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-gray-900 mb-2">98%</div>
-              <div className="text-gray-600 font-medium">Would Recommend</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

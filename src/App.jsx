@@ -12,6 +12,9 @@ import BrandProductDetails from './pages/Medifarma/Productpage/BrandProductdetai
 import ProductDetails from './pages/Medifarma/ProductDetails';
 import MyAppointments from './pages/Profiledata/MyAppointment';
 import PrescriptionPage from './components/UI/Precription';
+import OrderHistoryPage from './pages/Profiledata/OrderHistoryPage';
+import PaymentShippingPolicy from './pages/PaymentShippingPolicy';
+import ReplacementPolicy from './pages/ReplacementPolicy';
 
 
 
@@ -35,6 +38,13 @@ const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
 const LabTestsPage = lazy(() => import('./pages/LabTests/Labtests'));
 const DoctorSearchForm = lazy(() => import('./pages/Doctors/DoctorSearchForm'));
 const DoctorResults = lazy(() => import('./pages/Doctors/DoctorResults'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+
+import { Toaster } from 'react-hot-toast';
+import SDKVerification from './components/SDKVerification';
+import VideoCallComponent from './components/Features/VideoCall';
+import MediCatePage from './pages/Medifarma/Productpage/CategroyPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,12 +68,28 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+     {/* ✅ Global toast for entire app, shown only once */}
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+        }}
+      />
+
+    
       <BrowserRouter>
+
         <Suspense fallback={<div className="text-center py-10 text-lg">Loading...</div>}>
           <Routes>
+          
             <Route element={<MainLayout />}>
+          
+           
+
               <Route path="/" element={<Home />} />
               <Route path="/doctors" element={<DoctorPage />} />
+
            
               <Route path="/consultation/:specialtyId" element={<DoctorConsultationPlatform />} />
               <Route path="/booking/:doctorId/:userId" element={<DoctorBookingModal />} />
@@ -71,9 +97,10 @@ function App() {
               <Route path="/cart" element={<CartPages />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/order-success" element={<OrderSuccessPage />} />
-              <Route path="/category/:categoryId" element={<CategoryPage />} />
+              <Route path="/categories/:categoryId" element={<CategoryPage />} />
               <Route path="/healthcard" element={<SmartHealthMembershipCards />} />
               <Route path="/medifarma" element={<Medifarma />} />
+              <Route path="/medicategory/:mediId" element={<MediCatePage />} />
               <Route path="/search" element={<MedicineSearch />} />
               <Route path="/product/:productId" element={<ProductDetails />} />
 
@@ -82,14 +109,35 @@ function App() {
 
               <Route path="/" element={<Navigate to="/doctors/search" replace />} />
 
-              <Route path="/my-appointments" element={<MyAppointments/>} />
-              <Route path="/prescription-upload" element={<PrescriptionPage/>} />
+            
+
+
+
+         
+              <Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
+              <Route path="/terms-of-service" element={<TermsOfService/>} />
+              <Route path='/payement-shipping-policy' element={<PaymentShippingPolicy/>}/>
+              <Route path="/replacement-policy" element={<ReplacementPolicy />} />
+              
+
+              
+              
+          {/* doctor video call */}
+              <Route path="/video-call/:doctorId/:userId" element={<VideoCallComponent />} />
+              
+              {/* SDK Verification */}
+              {/* <Route path="/sdk-verification" element={<SDKVerification />} /> */}
+              
+         
+
+
 
 
             
             {/* Doctor search form */}
             <Route path="/doctors/search" element={<DoctorSearchForm />} />
             
+          
             {/* Doctor search results */}
             <Route path="/doctors/search-results" element={<DoctorResults />} />
 
@@ -97,6 +145,9 @@ function App() {
                 <Route path="/appointment" element={<AppointmentForm />} />
                 <Route path="/helpcenter" element={<HelpCenter />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/my-appointments" element={<MyAppointments/>} />
+                <Route path="/prescription-upload" element={<PrescriptionPage/>} />
+                <Route path="/orders" element={<OrderHistoryPage />} />
               </Route>
             </Route>
 
@@ -157,6 +208,8 @@ export default App;
 // const LabTestsPage = lazy(() => import("./pages/LabTests/Labtests"));
 // const DoctorSearchForm = lazy(() => import("./pages/Doctors/DoctorSearchForm"));
 // const DoctorResults = lazy(() => import("./pages/Doctors/DoctorResults"));
+// import PrivacyPolicy from './pages/PrivacyPolicy';
+// import TermsOfService from './pages/TermsOfService';
 
 // const queryClient = new QueryClient({
 //   defaultOptions: {

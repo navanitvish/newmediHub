@@ -10,7 +10,7 @@ export default function ApolloHealthcareNav() {
   const { data: categoryResponse, isLoading, error } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/categories/categoryWithSubscategories');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/categories/categoryWithSubscategories');
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }

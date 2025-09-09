@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Filter, Grid, List, Star, ShoppingCart, Heart, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // Health Condition Card Component
 const HealthConditionCard = ({ title, image, onClick }) => {
@@ -19,11 +18,13 @@ const HealthConditionCard = ({ title, image, onClick }) => {
 };
 
 // Health Conditions Browser Component
-export const HealthConditionsBrowser = ({ onCategorySelect }) => {
+export const HealthConditionsBrowser = () => {
+  const navigate = useNavigate();
+
   const { data: categoryResponse, isLoading, error } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/categories/categoryWithSubscategories');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/categories/categoryWithSubscategories');
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -36,7 +37,9 @@ export const HealthConditionsBrowser = ({ onCategorySelect }) => {
   const conditions = categoryResponse?.result || [];
 
   const handleConditionClick = (condition) => {
-    onCategorySelect(condition);
+    // Navigate to category page with the condition ID
+    navigate(`/medicategory/${condition._id}`)
+      
   };
 
   if (isLoading) {
@@ -73,7 +76,7 @@ export const HealthConditionsBrowser = ({ onCategorySelect }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {conditions.map((condition) => (
           <HealthConditionCard 
-            key={condition.id}
+            key={condition._id}
             title={condition.name || condition.title}
             image={condition.image || "https://via.placeholder.com/64x64?text=Medicine"}
             onClick={() => handleConditionClick(condition)}
@@ -83,3 +86,5 @@ export const HealthConditionsBrowser = ({ onCategorySelect }) => {
     </div>
   );
 };
+
+export default HealthConditionsBrowser;

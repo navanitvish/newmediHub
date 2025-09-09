@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import toast, { Toaster } from 'react-hot-toast';
 import {
   ArrowLeft,
   User,
@@ -12,6 +13,7 @@ import {
   Plus,
   Minus,
   Trash2,
+  Stethoscope,
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 
@@ -32,23 +34,34 @@ import {
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
 
-    const userData = React.useMemo(() => user?.result || {}, [user]);
+  // Get booking data from navigation state (for doctor appointments)
+  const { bookingData } = location.state || {};
+  
+  const userData = React.useMemo(() => user?.result || {}, [user]);
   console.log(user);
+  console.log("Booking Data:", bookingData);
 
   // Get cart items from Redux store
   const labTests = useSelector((state) => state.labTests.items || []);
   const medicines = useSelector((state) => state.medicines.items || []);
 
-  // Combine all items
-  const allItems = [...labTests, ...medicines];
+  // Combine all items including doctor appointment
+  const cartItems = [...labTests, ...medicines];
+  const allItems = bookingData ? [bookingData, ...cartItems] : cartItems;
 
-  // Calculate total
-  const totalAmount = allItems.reduce(
+  // Calculate total with doctor appointment fee
+  const cartTotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
+  
+  const appointmentFee = bookingData ? 
+    parseInt(bookingData.doctor.consultationFee.replace('₹', '').replace(',', '')) : 0;
+  
+  const totalAmount = cartTotal + appointmentFee;
   const discountAmount = Math.round(totalAmount * 0.1);
   const finalAmount = totalAmount - discountAmount;
 
@@ -61,9 +74,9 @@ const CheckoutPage = () => {
     // User ID for backend
     userId: user?._id || "",
 
-    // Appointment
-    date: "",
-    timeSlot: "",
+    // Appointment (will be overridden if bookingData exists)
+    date: bookingData?.date || "",
+    timeSlot: bookingData?.time || "",
 
     // Payment
     paymentMethod: "razorpay",
@@ -78,6 +91,17 @@ const CheckoutPage = () => {
       }));
     }
   }, [user, isAuthenticated]);
+
+  // Update form data when booking data is available
+  useEffect(() => {
+    if (bookingData) {
+      setFormData((prev) => ({
+        ...prev,
+        date: bookingData.date,
+        timeSlot: bookingData.time,
+      }));
+    }
+  }, [bookingData]);
 
   // Load Razorpay script
   useEffect(() => {
@@ -96,7 +120,7 @@ const CheckoutPage = () => {
     }
   }, []);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty and no booking data
   if (allItems.length === 0) {
     navigate("/");
     return null;
@@ -150,6 +174,8 @@ const CheckoutPage = () => {
       case 1:
         return isAuthenticated && user; // Just check if user is authenticated
       case 2:
+        // If booking data exists, appointment is already scheduled
+        if (bookingData) return true;
         return formData.date && formData.timeSlot;
       case 3:
         return true; // Razorpay handles payment validation
@@ -162,23 +188,21 @@ const CheckoutPage = () => {
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      alert("Please fill all required fields");
+       toast.error('Please fill all required fields.');
     }
   };
 
   // Determine item type for API call
-  // enum: ['test', 'appoinment', 'medicine', 'package'],
-
   const getItemType = () => {
-    if (medicines.length > 0 && labTests.length === 0) return "medicine";
-    if (labTests.length > 0 && medicines.length === 0) return "test";
-
-    return "mixed"; // If both types exist
+    if (bookingData && medicines.length === 0 && labTests.length === 0) return "appointment";
+    if (medicines.length > 0 && labTests.length === 0 && !bookingData) return "medicine";
+    if (labTests.length > 0 && medicines.length === 0 && !bookingData) return "test";
+    return "mixed"; // If multiple types exist
   };
 
   const handleRazorpayPayment = async () => {
     if (!razorpayLoaded) {
-      alert("Payment system is loading. Please try again.");
+      toast.error("Payment system is loading. Please try again")
       return;
     }
 
@@ -196,7 +220,7 @@ const CheckoutPage = () => {
       };
 
       const orderResponse = await fetch(
-        "https://medisewa.onrender.com/api/v1/payment/generateOrder",
+        "https://medisawabackend.onrender.com/api/v1/payment/generateOrder",
         {
           method: "POST",
           headers: {
@@ -210,21 +234,14 @@ const CheckoutPage = () => {
       console.log("Response headers:", [...orderResponse.headers.entries()]);
 
       const orderData = await orderResponse.json();
-
       console.log("orderData:", orderData);
 
       // Extract relevant fields
-      const razorpayOrderId = orderData?.order?.id; // e.g., "order_QjSgvukwRmZ3ee"
+      const razorpayOrderId = orderData?.order?.id;
       const amount = orderData?.order?.amount;
       const currency = orderData?.order?.currency || "INR";
-      const transactionId = orderData?.result?._id; // backend transaction DB ID
-      const pay_amount = (orderData?.order?.amount / 100).toString(); // Convert paise to rupees
-
-      console.log("razorpayOrderId:", razorpayOrderId);
-      console.log("amount:", amount);
-      console.log("currency:", currency);
-      console.log("transactionId:", transactionId);
-      console.log("pay_amount:", pay_amount);
+      const transactionId = orderData?.result?._id;
+      const pay_amount = (orderData?.order?.amount / 100).toString();
 
       if (!orderResponse.ok) {
         throw new Error(orderData.error || "Failed to create order");
@@ -236,7 +253,9 @@ const CheckoutPage = () => {
         amount: amount,
         currency: currency,
         name: "HealthCare Services",
-        description: "Lab Tests & Medicines",
+        description: bookingData ? 
+          `Appointment with Dr. ${bookingData.doctor.name}` : 
+          "Lab Tests & Medicines",
         order_id: razorpayOrderId,
         handler: async (response) => {
           try {
@@ -248,24 +267,26 @@ const CheckoutPage = () => {
                 razorpay_payment_id: response.razorpay_payment_id,
               },
               transactionId: transactionId || orderData.id,
-              pay_amount: pay_amount, // Convert paise to rupees
-              // type
-              
+              pay_amount: pay_amount,
+              type: getItemType(),
             };
 
             console.log("verifyPayload", verifyPayload);
 
             // Add specific IDs based on item type
+            if (bookingData) {
+              verifyPayload.doctorId = bookingData.doctor.id;
+            }
             if (medicines.length > 0) {
-              verifyPayload.medicineId = medicines[0].id; // Assuming single medicine for now
+              verifyPayload.medicineId = medicines[0].id;
             }
             if (labTests.length > 0) {
-              verifyPayload.testId = labTests[0].id; // Assuming single test for now
+              verifyPayload.testId = labTests[0].id;
             }
 
             // Verify payment on backend
             const verifyResponse = await fetch(
-              "https://medisewa.onrender.com/api/v1/payment/verifyPayment",
+              "https://medisawabackend.onrender.com/api/v1/payment/verifyPayment",
               {
                 method: "POST",
                 headers: {
@@ -279,10 +300,11 @@ const CheckoutPage = () => {
             const verifyData = await verifyResponse.json();
 
             if (verifyResponse.ok && verifyData.success) {
-              // Payment successful - clear all carts
+              // Payment successful - clear cart items (not booking data)
+              toast.success('Payment successful.');
               clearAllCarts();
 
-              const orderData = {
+              const finalOrderData = {
                 orderId: verifyData.orderId || response.razorpay_order_id,
                 paymentId: response.razorpay_payment_id,
                 items: allItems,
@@ -293,7 +315,15 @@ const CheckoutPage = () => {
                   phone: userData.mobile,
                   address: userData.address,
                 },
-                appointment: {
+                appointment: bookingData ? {
+                  doctorId: bookingData.doctor.id,
+                  doctorName: bookingData.doctor.name,
+                  appointmentType: bookingData.appointmentType,
+                  consultationType: bookingData.consultationType,
+                  date: bookingData.date,
+                  timeSlot: bookingData.time,
+                  consultationFee: bookingData.doctor.consultationFee,
+                } : {
                   date: formData.date,
                   timeSlot: formData.timeSlot,
                 },
@@ -305,9 +335,10 @@ const CheckoutPage = () => {
                 orderDate: new Date().toISOString(),
                 status: "confirmed",
               };
-
-              alert(`Payment Successful! Order ID: ${orderData.orderId}`);
-              navigate("/order-success", { state: { orderData } });
+              
+              toast.success('Payment successful')
+              console.log("Final Order Data:", finalOrderData);
+              navigate("/order-success", { state: { orderData: finalOrderData } });
             } else {
               throw new Error("Payment verification failed");
             }
@@ -317,13 +348,14 @@ const CheckoutPage = () => {
           }
         },
         prefill: {
-          name: `userData.name}`,
+          name: userData.name,
           email: userData.email,
-          contact:userData.mobile,
+          contact: userData.mobile,
         },
         notes: {
           appointment_date: formData.date,
           appointment_time: formData.timeSlot,
+          ...(bookingData && { doctor_name: bookingData.doctor.name }),
         },
         theme: {
           color: "#2563eb",
@@ -341,7 +373,7 @@ const CheckoutPage = () => {
       rzp.open();
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Payment failed. Please try again.");
+      toast.error('Payment failed. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -452,31 +484,85 @@ const CheckoutPage = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
         <Calendar size={20} className="mr-2" />
-        Schedule Appointment
+        Appointment Details
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          type="date"
-          value={formData.date}
-          onChange={(e) => handleInputChange("date", e.target.value)}
-          min={new Date().toISOString().split("T")[0]}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+      {bookingData ? (
+        // Show booked doctor appointment details
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 p-6">
+          <div className="flex items-center mb-4">
+            <Stethoscope size={24} className="text-green-600 mr-3" />
+            <div>
+              <h4 className="text-lg font-semibold text-gray-800">
+                Appointment Scheduled
+              </h4>
+              <p className="text-sm text-gray-600">
+                Your appointment has been scheduled with the doctor
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Doctor</label>
+                <p className="text-gray-900">Dr. {bookingData.doctor.name}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Specialty</label>
+                <p className="text-gray-900">{bookingData.doctor.specialty}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Consultation Fee</label>
+                <p className="text-gray-900 font-semibold text-green-600">
+                  {bookingData.doctor.consultationFee}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Date</label>
+                <p className="text-gray-900">{bookingData.date}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Time</label>
+                <p className="text-gray-900">{bookingData.time}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">Type</label>
+                <p className="text-gray-900 capitalize">
+                  {bookingData.consultationType} - {bookingData.appointmentType}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Show appointment scheduling form for other services
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => handleInputChange("date", e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-        <select
-          value={formData.timeSlot}
-          onChange={(e) => handleInputChange("timeSlot", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select Time Slot *</option>
-          {timeSlots.map((slot) => (
-            <option key={slot} value={slot}>
-              {slot}
-            </option>
-          ))}
-        </select>
-      </div>
+          <select
+            value={formData.timeSlot}
+            onChange={(e) => handleInputChange("timeSlot", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Time Slot *</option>
+            {timeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 
@@ -546,7 +632,36 @@ const CheckoutPage = () => {
       </div>
 
       <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
-        {allItems.map((item, index) => (
+        {/* Doctor Appointment Item */}
+        {bookingData && (
+          <div className="border border-green-200 rounded-lg p-3 bg-green-50">
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex-1">
+                <div className="font-medium text-gray-800 text-sm">
+                  Dr. {bookingData.doctor.name}
+                </div>
+                <div className="text-xs text-green-600 capitalize">
+                  {bookingData.consultationType} Consultation
+                </div>
+                <div className="text-xs text-gray-500">
+                  {bookingData.date} at {bookingData.time}
+                </div>
+              </div>
+              <div className="flex items-center">
+                <Stethoscope size={16} className="text-green-600 mr-2" />
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Consultation Fee</span>
+              <div className="font-medium text-sm text-green-600">
+                {bookingData.doctor.consultationFee}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cart Items */}
+        {cartItems.map((item, index) => (
           <div key={index} className="border border-gray-100 rounded-lg p-3">
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
@@ -597,6 +712,18 @@ const CheckoutPage = () => {
       </div>
 
       <div className="border-t border-gray-200 pt-3 space-y-2">
+        {appointmentFee > 0 && (
+          <div className="flex justify-between text-gray-700">
+            <span>Consultation Fee</span>
+            <span>₹{appointmentFee}</span>
+          </div>
+        )}
+        {cartTotal > 0 && (
+          <div className="flex justify-between text-gray-700">
+            <span>Cart Subtotal</span>
+            <span>₹{cartTotal}</span>
+          </div>
+        )}
         <div className="flex justify-between text-gray-700">
           <span>Subtotal</span>
           <span>₹{totalAmount}</span>
@@ -611,12 +738,12 @@ const CheckoutPage = () => {
         </div>
       </div>
 
-      {allItems.length > 0 && (
+      {cartItems.length > 0 && (
         <button
           onClick={clearAllCarts}
           className="w-full mt-4 px-4 py-2 text-sm text-red-600 border border-red-200 rounded-md hover:bg-red-50"
         >
-          Clear All Items
+          Clear Cart Items
         </button>
       )}
     </div>
@@ -624,16 +751,19 @@ const CheckoutPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 min-h-screen mt-20 mb-10">
+      <Toaster position="top-right" />
       <div className="mb-6">
         <button
-          onClick={() => navigate("/cart")}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center text-blue-600 font-medium hover:text-blue-700 mb-4"
         >
           <ArrowLeft size={16} className="mr-1" />
-          Back to Cart
+          Back
         </button>
 
-        <h1 className="text-2xl font-bold text-gray-800">Checkout</h1>
+        <h1 className="text-2xl font-bold text-gray-800">
+          {bookingData ? 'Complete Appointment Booking' : 'Checkout'}
+        </h1>
         <p className="text-gray-600 mt-1">
           Complete your order in few simple steps
         </p>

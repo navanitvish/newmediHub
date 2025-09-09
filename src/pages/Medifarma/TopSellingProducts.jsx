@@ -20,7 +20,7 @@ export const TopSellingProducts = () => {
   const { data: apiResponse, isLoading, error } = useQuery({
     queryKey: ['topSellMedicines'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/selles/topSellMedicines');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/selles/topSellMedicines');
       if (!response.ok) {
         throw new Error('Failed to fetch top selling medicines');
       }

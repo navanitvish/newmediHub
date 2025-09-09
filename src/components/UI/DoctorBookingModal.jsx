@@ -16,6 +16,7 @@ const DoctorBookingModal = () => {
   
   // Get doctor data from navigation state
   const { doctor, consultationType, fromSpecialty  } = location.state || {};
+  console.log('Doctor nv Data:', doctor);  
   
   const [selectedAppointmentType, setSelectedAppointmentType] = useState('');
   const [selectedDate, setSelectedDate] = useState(15);
@@ -61,7 +62,7 @@ const DoctorBookingModal = () => {
       if (!doctor) return { timeSlots: [] };
       const formattedDate = getFormattedDate(selectedDate);
       const token = localStorage.getItem('smartmeditoken');
-      const response = await fetch(`https://medisewa.onrender.com/api/v1/bookings/doctorBookings/${userId}?date=${formattedDate}`,{
+      const response = await fetch(`https://medisawabackend.onrender.com/api/v1/bookings/doctorBookings/${userId}?date=${formattedDate}`,{
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -156,28 +157,39 @@ const DoctorBookingModal = () => {
   };
 
   const handleConfirmBooking = () => {
-    if (!selectedAppointmentType || !selectedTime) {
-      alert('Please select appointment type and time slot');
-      return;
-    }
-    
-    const bookingData = {
-      doctor: {
-        id: doctor.id,
-        name: doctor.name,
-        specialty: doctor.specialty,
-        consultationFee: doctor.consultationFee
-      },
-      appointmentType: selectedAppointmentType,
-      consultationType: consultationType,
-      date: getFormattedDate(selectedDate),
-      time: selectedTime,
-      fromSpecialty: fromSpecialty
-    };
-    
-    console.log('Booking confirmed:', bookingData);
-    alert(`Appointment booked successfully with Dr. ${doctor.name}!`);
+  if (!selectedAppointmentType || !selectedTime) {
+    alert('Please select appointment type and time slot');
+    return;
+  }
+  
+  const bookingData = {
+    doctor: {
+      id: doctor._id, // Changed from doctor.id to doctor._id based on your API usage
+      name: doctor.name,
+      specialty: doctor.specialty,
+      consultationFee: doctor.consultationFee,
+      image: doctor.image,
+      rating: doctor.rating,
+      reviews: doctor.reviews,
+      experience: doctor.experience,
+      location: doctor.location,
+      education: doctor.education
+    },
+    appointmentType: selectedAppointmentType,
+    consultationType: consultationType,
+    date: getFormattedDate(selectedDate),
+    time: selectedTime,
+    fromSpecialty: fromSpecialty,
+    userId: userId // Include userId from params
   };
+  
+  console.log('Booking confirmed:', bookingData);
+
+  // Navigate to checkout with booking data
+  navigate('/checkout', { 
+    state: { bookingData } 
+  });
+};
 
   const handleGoBack = () => {
     navigate(-1);

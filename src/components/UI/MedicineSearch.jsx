@@ -12,7 +12,7 @@ const MedicineSearch = () => {
   const dispatch = useDispatch();
 
   // Direct API endpoint
-  const API_ENDPOINT = 'https://medisewa.onrender.com/api/v1/medicines/search';
+  const API_ENDPOINT = 'https://medisawabackend.onrender.com/api/v1/medicines/search';
 
   // Handle search
   const handleSearch = async () => {

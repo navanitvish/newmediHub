@@ -20,7 +20,7 @@ export const SkinCarebrand = () => {
   const { data: apiResponse, isLoading, error } = useQuery({
     queryKey: ['CetegoriesWiseMedicines'],
     queryFn: async () => {
-      const response = await fetch('https://medisewa.onrender.com/api/v1/medicines/categoriesWiseMedicines');
+      const response = await fetch('https://medisawabackend.onrender.com/api/v1/medicines/categoriesWiseMedicines');
       if (!response.ok) {
         throw new Error('Failed to fetch Category wise medicines');
       }

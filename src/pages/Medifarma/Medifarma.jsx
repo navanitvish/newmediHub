@@ -18,7 +18,8 @@ import {
 
 // Components
 
-import ApolloHealthcareNav from './medibar';
+// import ApolloHealthcareNav from './medibar';
+
 import PopularLabTests from '../LabTests/PopularLabTests';
 import BannerCarousel from '../../components/UI/Banner';
 import { ValueDealsCarousel } from './ValueDeals';
@@ -84,7 +85,7 @@ const Medifarma = () => {
   return (
     <div className='bg-gray-100'>
       <div className="font-sans text-gray-800 mt-4">
-        <ApolloHealthcareNav />
+        {/* <ApolloHealthcareNav /> */}
 
         {/* Hero Section */}
         <section className="z-0 relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white">
