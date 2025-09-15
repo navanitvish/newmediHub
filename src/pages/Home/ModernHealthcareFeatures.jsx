@@ -33,7 +33,7 @@ const ModernHealthcareFeatures = () => {
     {
       id: 4,
       icon: Pill,
-      title: "MediFarma Integration",
+      title: "MediPharma Integration",
       description: "Seamless prescription management with automated refills, drug interactions alerts, and doorstep delivery.",
       gradient: "from-purple-400 to-violet-600",
       bgGradient: "from-purple-50 to-violet-50",

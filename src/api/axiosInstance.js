@@ -1,10 +1,8 @@
 import axios from 'axios';
 
-<<<<<<< HEAD
-const baseURL = 'https://medisawabackend.onrender.com/';
-=======
+
 const baseURL = 'https://medisawabackend.onrender.com';
->>>>>>> 3cfe3ff933be9d8ecde1a3a3ff5d7b304d8107d8
+
 
 const axiosInstance = axios.create({
   baseURL,

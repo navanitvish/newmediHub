@@ -169,7 +169,7 @@ const Navbar = () => {
                         : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                     }`}
                   >
-                    Medifarma
+                    MediPharma
                   </Link>
                 </div>
 
