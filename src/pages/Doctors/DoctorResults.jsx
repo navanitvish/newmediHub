@@ -20,7 +20,7 @@ const searchDoctorsBySymptom = async (symptoms) => {
     return { result: [], count: 0 };
   }
 
-  const response = await fetch(`https://medisewa.onrender.com/api/v1/doctors/searchBySymptom?symptom=${encodeURIComponent(symptomList)}`);
+  const response = await fetch(`https://medisawabackend.onrender.com/api/v1/doctors/searchBySymptom?symptom=${encodeURIComponent(symptomList)}`);
   
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

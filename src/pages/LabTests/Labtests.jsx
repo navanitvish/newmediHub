@@ -310,76 +310,11 @@ export default function LabTestsPage() {
       <ImageCarousel />
 
       {/* Test Cards */}
-      <section className="max-w-7xl mx-auto px-4 mt-8">
+      {/* <section className="max-w-7xl mx-auto px-4 mt-8">
         <TestCard />
-      </section>
-
-      {/* Top Booked Lab Tests Slider */}
-      {/* <section className="max-w-7xl mx-auto px-4 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Top Booked Lab Tests</h2>
-          <div className="flex space-x-2">
-            <button 
-              className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 disabled:opacity-50"
-              onClick={slideTestsLeft}
-              disabled={currentTestSlide === 0}
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button 
-              className="bg-gray-200 p-2 rounded-full hover:bg-gray-300 disabled:opacity-50"
-              onClick={slideTestsRight}
-              disabled={currentTestSlide >= topBookedTests.length - 3}
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {topBookedTests.slice(currentTestSlide, currentTestSlide + 3).map(test => (
-            <div key={test.id} className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-md transition">
-              <div className="p-4">
-                <div className="flex items-center mb-3">
-                  <div className="text-3xl mr-3">{test.icon}</div>
-                  <h3 className="font-medium text-gray-800">{test.name}</h3>
-                </div>
-                
-                <div className="mb-3 space-y-1">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span>Sample: {test.sampleType}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock size={16} className="mr-1" />
-                    <span>Report in {test.reportHours} hours</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span>Fasting: {test.fastingRequired ? 'Required' : 'Not Required'}</span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                  <div>
-                    <span className="font-bold text-gray-800">₹{test.price}</span>
-                    {test.originalPrice && (
-                      <>
-                        <span className="text-sm text-gray-500 line-through ml-2">₹{test.originalPrice}</span>
-                        <span className="text-sm text-green-600 ml-1">{test.discount}% off</span>
-                      </>
-                    )}
-                  </div>
-                  <button 
-                    className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                    onClick={() => handleAddToCart(test)}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </section> */}
+
+    
 
       {/* Banner Images */}
       <div className="max-w-7xl mx-auto px-4 space-y-8">

@@ -42,62 +42,74 @@ const SimpleFAQ = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16'>
       {/* Header */}
       <div className="text-center mb-12">
-    
+
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-8 ">
-            <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent">
-               Frequently
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Asked Questions
-            </span>
-          </h2>
+          <span className="bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent">
+            Frequently
+          </span>
+          <br />
+          <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Asked Questions
+          </span>
+        </h2>
         <p className="text-xl text-gray-600">
           Find quick answers to common questions about our services
         </p>
       </div>
+      <div className='flex max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 '>
+        <div className='w'>
+          <img 
+          src="https://cdn.dribbble.com/userupload/15239840/file/original-551f6458d5274560d7e25661240f6e51.png?resize=1200x1200&vertical=center"
+           alt="" 
+           className='w-full h-full object-cover rounded-2xl'
 
-      {/* FAQ Items */}
-      <div className="space-y-6">
-        {faqs.map((faq) => (
-          <div
-            key={faq.id}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden"
-          >
-            <button
-              onClick={() => toggleFaq(faq.id)}
-              className="w-full px-8 py-6 text-left flex justify-between items-center focus:outline-none focus:ring-4 focus:ring-blue-100 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <span className="text-lg font-semibold text-gray-900 pr-4">
-                {faq.question}
-              </span>
+           />
+
+        </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ">
+
+
+          {/* FAQ Items */}
+          <div className="space-y-6">
+            {faqs.map((faq) => (
               <div
-                className={`p-2 rounded-full bg-blue-50 transition-all duration-300 ${
-                  expandedFaqId === faq.id ? 'rotate-180 bg-blue-100' : ''
-                }`}
+                key={faq.id}
+                className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden"
               >
-                <ChevronDown className="h-5 w-5 text-blue-600" />
+                <button
+                  onClick={() => toggleFaq(faq.id)}
+                  className="w-full px-8 py-6 text-left flex justify-between items-center focus:outline-none focus:ring-4 focus:ring-blue-100 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <span className="text-lg font-semibold text-gray-900 pr-4">
+                    {faq.question}
+                  </span>
+                  <div
+                    className={`p-2 rounded-full bg-blue-50 transition-all duration-300 ${expandedFaqId === faq.id ? 'rotate-180 bg-blue-100' : ''
+                      }`}
+                  >
+                    <ChevronDown className="h-5 w-5 text-blue-600" />
+                  </div>
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out ${expandedFaqId === faq.id
+                    ? 'max-h-96 opacity-100'
+                    : 'max-h-0 opacity-0'
+                    }`}
+                >
+                  <div className="px-8 pb-6 border-t border-gray-100">
+                    <p className="text-gray-700 leading-relaxed pt-4">
+                      {faq.answer}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </button>
-            
-            <div
-              className={`transition-all duration-300 ease-in-out ${
-                expandedFaqId === faq.id 
-                  ? 'max-h-96 opacity-100' 
-                  : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="px-8 pb-6 border-t border-gray-100">
-                <p className="text-gray-700 leading-relaxed pt-4">
-                  {faq.answer}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

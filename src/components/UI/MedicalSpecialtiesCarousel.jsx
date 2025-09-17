@@ -144,13 +144,13 @@ export default function MedicalSpecialtiesCarousel() {
                 <Stethoscope className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                <h2 className="text-3xl md:text-4xl font-black bg-gradient-to-r from-blue-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight">
                   Medical Specialties
                 </h2>
                 <div className="h-1.5 w-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-full mt-2"></div>
               </div>
             </div>
-            <p className="text-gray-600 text-xl font-medium max-w-2xl leading-relaxed">
+            <p className="text-gray-600 text-lg font-medium max-w-2xl leading-relaxed">
               Discover the perfect specialist for your health journey with our comprehensive medical expertise
             </p>
           </div>
@@ -182,7 +182,7 @@ export default function MedicalSpecialtiesCarousel() {
         {specialtiesData.map((specialty, index) => (
           <div
             key={specialty._id}
-            className={`group relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-md hover:shadow-2xl p-6 transition-all duration-500 ease-out cursor-pointer border-2 border-gray-100/50 hover:border-blue-200/50 transform hover:-translate-y-3 overflow-hidden ${
+            className={`group relative bg-white/80 backdrop-blur-sm rounded-3xl  hover:shadow-2xl p-6 transition-all duration-500 ease-out cursor-pointer border-2 border-gray-100/50 hover:border-blue-200/50 transform hover:-translate-y-3 overflow-hidden ${
               hoveredId === index ? 'ring-4 ring-blue-200/50 shadow-blue-100/50' : ''
             }`}
             onMouseEnter={() => setHoveredId(index)}

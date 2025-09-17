@@ -1,493 +1,582 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { 
-  Heart, Shield, Users, Award, Check, ArrowRight, ChevronDown, 
-  ChevronUp, Phone, Mail, MapPin, QrCode, Calendar, Clock, 
-  AlertCircle, MessageSquare, Activity, ShieldCheck, Stethoscope
+  Heart, Shield, Users, Award, Download, QrCode, Phone, Mail, MapPin,
+  Activity, ShieldCheck, Stethoscope, Calendar, Clock, Star, Camera,
+  Edit3, RefreshCw, CreditCard, Zap, Globe, Smartphone
 } from 'lucide-react';
-import EpisodesWithVideo from '../epicode';
 
-export default function SmartHealthMembershipCards() {
-  const [activeCard, setActiveCard] = useState('premium');
-  const [flippedCards, setFlippedCards] = useState({});
-  const [showDetails, setShowDetails] = useState(false);
-  const [activeTab, setActiveTab] = useState('benefits');
-  
-  const membershipOptions = [
+// API integration (commented out)
+// import { useGetQuery } from '../../../api/apiCall';
+// import API_ENDPOINTS from '../../../api/apiEndpoint';
+
+export default function SmartCareCard() {
+  const [selectedPlan, setSelectedPlan] = useState('premium');
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const cardRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  // API calls (commented out for now)
+  /*
+  const {
+    data: planData,
+    isLoading: plansLoading,
+    error: plansError,
+    refetch: refetchPlans
+  } = useGetQuery(`${API_ENDPOINTS.PLANS.GET_ALL}`);
+
+  const {
+    data: userData,
+    isLoading: userLoading,
+    error: userError,
+    refetch: refetchUser
+  } = useGetQuery(`${API_ENDPOINTS.USER.GET_PROFILE}/${userId}`);
+
+  const {
+    data: membershipData,
+    isLoading: membershipLoading,
+    error: membershipError,
+    refetch: refetchMembership
+  } = useGetQuery(`${API_ENDPOINTS.MEMBERSHIP.GET_DETAILS}/${memberId}`);
+  */
+
+  // Mock API data (replace with actual API data)
+  const memberData = {
+    name: 'Alexander Johnson',
+    memberId: 'SC-2025-4391',
+    phone: '+91 98765 43210',
+    email: 'alex.johnson@example.com',
+    address: '123 Health Avenue, Bangalore',
+    validTill: '04/2028',
+    joinDate: 'Jan 2025',
+    emergencyContact: '+91 98765 43211',
+    bloodGroup: 'O+',
+    dateOfBirth: '15/08/1990'
+  };
+
+  const plans = [
     {
       id: 'basic',
-      name: 'Basic',
-      color: 'from-sky-500 to-blue-500',
-      accentColor: 'sky-400',
-      price: '₹29.99',
+      name: 'Essential',
+      color: 'from-cyan-400 via-blue-500 to-blue-600',
+      accentColor: 'bg-cyan-500',
+      price: '₹499',
       period: 'monthly',
-      description: 'Essential health coverage for individuals seeking affordable care options.',
-      features: [
-        'Access to basic health checkups',
-        'Online appointment booking',
-        'Digital health records',
-        '24/7 nurse hotline'
-      ],
-      facilities: [
-        'Access to 500+ network hospitals',
-        'In-house pharmacy discounts',
-        'Basic diagnostic tests'
-      ],
-      testimonial: {
-        name: 'Rahul Sharma',
-        text: 'Smart Health Basic plan has made healthcare accessible and affordable for me. The online booking system is incredibly convenient!',
-        rating: 4
-      }
+      icon: <Heart className="h-5 w-5" />,
+      features: ['Basic checkups', 'Online booking', 'Digital records', 'Telemedicine'],
+      hospitals: '500+ hospitals',
+      description: 'Perfect for basic healthcare needs'
     },
     {
       id: 'family',
-      name: 'Family',
-      color: 'from-emerald-500 to-green-500',
-      accentColor: 'emerald-400',
-      price: '₹79.99',
+      name: 'Family Care',
+      color: 'from-emerald-400 via-teal-500 to-green-600',
+      accentColor: 'bg-emerald-500',
+      price: '₹1299',
       period: 'monthly',
-      description: 'Comprehensive care for your entire family with specialized services for all ages.',
-      features: [
-        'Coverage for up to 4 family members',
-        'Pediatric care included',
-        'Quarterly health assessments',
-        'Dental checkups twice a year',
-        'Mental health support'
-      ],
-      facilities: [
-        'Access to 750+ network hospitals',
-        'Family doctor assignment',
-        'Annual vaccines included',
-        'Nutritional counseling'
-      ],
-      testimonial: {
-        name: 'Priya Patel',
-        text: 'Since enrolling my family in the Family plan, healthcare management has become stress-free. The quarterly assessments help us stay proactive about our well-being.',
-        rating: 5
-      }
+      icon: <Users className="h-5 w-5" />,
+      features: ['4 members coverage', 'Pediatric care', 'Dental checkups', 'Vision care'],
+      hospitals: '750+ hospitals',
+      description: 'Comprehensive family health solution'
     },
     {
       id: 'premium',
       name: 'Premium',
-      color: 'from-indigo-500 to-blue-600',
-      accentColor: 'indigo-400',
-      price: '₹59.99',
+      color: 'from-violet-500 via-purple-600 to-indigo-700',
+      accentColor: 'bg-violet-600',
+      price: '₹899',
       period: 'monthly',
-      description: 'Advanced individual care with priority services and expanded specialist network.',
-      features: [
-        'Priority appointment scheduling',
-        'Specialist consultations included',
-        'Annual comprehensive health screening',
-        'Personalized wellness plan',
-        'Discounts on fitness centers'
-      ],
-      facilities: [
-        'Access to 1000+ premium hospitals',
-        'Dedicated health manager',
-        'Advanced diagnostic coverage',
-        'Weekend appointment options'
-      ],
-      testimonial: {
-        name: 'Vikram Mehta',
-        text: 'The Premium membership has transformed my healthcare experience. Having priority scheduling and a personalized wellness plan has made managing my health so much easier.',
-        rating: 5
-      }
+      icon: <Shield className="h-5 w-5" />,
+      features: ['Priority booking', 'Specialist care', 'Health screening', 'Annual checkup'],
+      hospitals: '1000+ hospitals',
+      description: 'Advanced healthcare with priority access'
     },
     {
       id: 'platinum',
-      name: 'Platinum',
-      color: 'from-violet-600 to-purple-600',
-      accentColor: 'violet-400',
-      price: '₹119.99',
+      name: 'Platinum Elite',
+      color: 'from-rose-500 via-pink-600 to-purple-700',
+      accentColor: 'bg-rose-600',
+      price: '₹1999',
       period: 'monthly',
-      description: 'Elite healthcare experience with exclusive benefits and concierge services.',
-      features: [
-        'VIP healthcare access',
-        'Executive health assessments',
-        'Personal health concierge',
-        'Global coverage while traveling',
-        'Premium wellness retreats',
-        'Home doctor visits'
-      ],
-      facilities: [
-        'Access to all network hospitals worldwide',
-        'Private rooms guaranteed',
-        'International specialist network',
-        'Helicopter medical evacuation',
-        'Annual executive health retreat'
-      ],
-      testimonial: {
-        name: 'Ananya Krishnan',
-        text: 'As someone who travels frequently, the global coverage and concierge service with the Platinum plan gives me peace of mind wherever I go. The executive assessments are incredibly thorough.',
-        rating: 5
-      }
+      icon: <Award className="h-5 w-5" />,
+      features: ['VIP access', 'Global coverage', 'Concierge service', 'Home visits'],
+      hospitals: 'Worldwide network',
+      description: 'Ultimate premium healthcare experience'
     }
   ];
-  
-  const toggleCardFlip = (cardId) => {
-    setFlippedCards(prev => ({
-      ...prev,
-      [cardId]: !prev[cardId]
-    }));
-  };
-  
-  const getCardIcon = (cardId) => {
-    switch(cardId) {
-      case 'basic': return <Heart />;
-      case 'family': return <Users />;
-      case 'premium': return <Shield />;
-      case 'platinum': return <Award />;
-      default: return <Heart />;
+
+  const currentPlan = plans.find(plan => plan.id === selectedPlan);
+
+  // Handle profile image upload
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
-  
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <span key={i} className={i < rating ? "text-yellow-400" : "text-gray-300"}>★</span>
-      );
+
+  // Mock API call for downloading card
+  const downloadCard = async () => {
+    setIsDownloading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Create enhanced download with better graphics
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1000;
+      canvas.height = 630;
+      
+      // Create sophisticated gradient background
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      if (currentPlan.id === 'basic') {
+        gradient.addColorStop(0, '#22d3ee');
+        gradient.addColorStop(0.5, '#3b82f6');
+        gradient.addColorStop(1, '#2563eb');
+      } else if (currentPlan.id === 'family') {
+        gradient.addColorStop(0, '#34d399');
+        gradient.addColorStop(0.5, '#14b8a6');
+        gradient.addColorStop(1, '#059669');
+      } else if (currentPlan.id === 'premium') {
+        gradient.addColorStop(0, '#8b5cf6');
+        gradient.addColorStop(0.5, '#7c3aed');
+        gradient.addColorStop(1, '#4338ca');
+      } else {
+        gradient.addColorStop(0, '#f43f5e');
+        gradient.addColorStop(0.5, '#ec4899');
+        gradient.addColorStop(1, '#7c2d12');
+      }
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Add decorative elements
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.beginPath();
+      ctx.arc(800, 100, 120, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(150, 500, 80, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add text with better typography
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 36px Inter, Arial';
+      ctx.fillText('Smart Care Card', 60, 100);
+      
+      ctx.font = '28px Inter, Arial';
+      ctx.fillText(memberData.name, 60, 180);
+      
+      ctx.font = '20px Inter, Arial';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.fillText(`Member ID: ${memberData.memberId}`, 60, 230);
+      ctx.fillText(`Plan: ${currentPlan.name}`, 60, 280);
+      ctx.fillText(`Valid Till: ${memberData.validTill}`, 60, 330);
+      
+      // Add plan badge
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.roundRect(60, 380, 200, 50, 25);
+      ctx.fill();
+      
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 18px Inter, Arial';
+      ctx.fillText('ACTIVE MEMBER', 80, 410);
+      
+      // Download
+      const link = document.createElement('a');
+      link.download = `smart-care-card-${memberData.memberId}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+      
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setIsDownloading(false);
     }
-    return stars;
   };
-  
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6 pb-32">
-      <div className="max-w-7xl mx-auto mt-28">
-        <header className="mb-12 text-center">
-          <div className="flex items-center justify-center">
-            <Activity className="h-8 w-8 text-indigo-600 mr-2" />
-            <h1 className="text-4xl font-bold text-indigo-600">Smart Health 2025</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Enhanced Header */}
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative">
+              <Activity className="h-12 w-12 text-indigo-600 mr-4" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Smart Care Card 2025
+            </h1>
           </div>
-          <p className="text-gray-600 mt-3 text-lg">Modern healthcare solutions for the modern world</p>
-          <div className="mt-4 inline-flex items-center px-4 py-1 bg-indigo-100 text-indigo-600 text-sm font-medium rounded-full">
-            <ShieldCheck className="h-4 w-4 mr-1" />
-            Trusted by 5M+ members across India
+          <p className="text-gray-600 text-xl mb-6">Next-generation healthcare, beautifully designed</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="inline-flex items-center px-6 py-3 bg-indigo-100 rounded-full">
+              <ShieldCheck className="h-5 w-5 text-indigo-600 mr-2" />
+              <span className="text-indigo-600 font-semibold">Trusted by 10M+ members</span>
+            </div>
+            <div className="inline-flex items-center px-6 py-3 bg-green-100 rounded-full">
+              <Globe className="h-5 w-5 text-green-600 mr-2" />
+              <span className="text-green-600 font-semibold">Global Coverage</span>
+            </div>
           </div>
-        </header>
-        
-        {/* Membership Selection Tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {membershipOptions.map(option => (
+        </div>
+
+        {/* Enhanced Plan Selector */}
+        <div className="flex flex-wrap justify-center gap-6 mb-16">
+          {plans.map(plan => (
             <button
-              key={option.id}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm ${
-                activeCard === option.id 
-                  ? `bg-gradient-to-r ${option.color} text-white` 
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              key={plan.id}
+              onClick={() => setSelectedPlan(plan.id)}
+              className={`group relative flex flex-col items-center px-8 py-6 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                selectedPlan === plan.id
+                  ? `bg-gradient-to-r ${plan.color} text-white shadow-2xl shadow-purple-500/25`
+                  : 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg hover:shadow-xl'
               }`}
-              onClick={() => setActiveCard(option.id)}
             >
-              <div className="flex items-center">
-                {getCardIcon(option.id)}
-                <span className="ml-2">{option.name}</span>
+              <div className={`p-3 rounded-full mb-3 ${selectedPlan === plan.id ? 'bg-white/20' : plan.accentColor}`}>
+                <div className={selectedPlan === plan.id ? 'text-white' : 'text-white'}>
+                  {plan.icon}
+                </div>
               </div>
+              <span className="font-bold text-lg">{plan.name}</span>
+              <span className={`text-sm ${selectedPlan === plan.id ? 'text-white/80' : 'text-gray-500'}`}>
+                {plan.price}/{plan.period}
+              </span>
+              {selectedPlan === plan.id && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <Star className="h-3 w-3 text-white fill-current" />
+                </div>
+              )}
             </button>
           ))}
         </div>
-        
-        {/* Featured Card - larger display */}
-        <div className="mb-16">
-          {membershipOptions.map(option => (
-            option.id === activeCard && (
-              <div key={option.id} className="w-full max-w-md mx-auto">
-                {/* Card Container with 3D effect */}
-                <div className="relative w-full h-56 perspective-1000">
-                  <div 
-                    className={`relative w-full h-full transition-transform duration-500 transform-style-preserve-3d cursor-pointer ${flippedCards[option.id] ? 'rotate-y-180' : ''}`}
-                    onClick={() => toggleCardFlip(option.id)}
-                  >
-                    {/* Front Side */}
-                    <div className={`absolute w-full h-full backface-hidden ${flippedCards[option.id] ? 'hidden md:block' : ''}`}>
-                      <div className={`w-full h-full bg-gradient-to-br ${option.color} rounded-2xl shadow-xl p-6 text-white`}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center">
-                              <Stethoscope className="h-6 w-6" />
-                              <h2 className="text-xl font-bold ml-2">Smart Health</h2>
-                            </div>
-                            <p className="text-blue-50 text-sm mt-1">{option.name} Member</p>
-                          </div>
-                          <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                            {getCardIcon(option.id)}
-                          </div>
-                        </div>
-                        
-                        <div className="mt-8">
-                          <p className="text-sm text-blue-50">Member Name</p>
-                          <p className="text-xl font-semibold">Alexander Johnson</p>
-                        </div>
-                        
-                        <div className="mt-4 flex justify-between items-end">
-                          <div>
-                            <p className="text-sm text-blue-50">Member ID</p>
-                            <p className="font-mono tracking-wider">SH-2025-4391</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-blue-50">Valid Thru</p>
-                            <p>04/2028</p>
-                          </div>
-                        </div>
-                      </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 items-start">
+          {/* Enhanced Card Display */}
+          <div className="flex flex-col items-center">
+            <div className="relative w-[420px] h-[270px] mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
+              <div 
+                className="relative w-full h-full transition-all duration-700 cursor-pointer hover:scale-105"
+                onClick={() => setIsFlipped(!isFlipped)}
+                ref={cardRef}
+              >
+                {/* Enhanced Front Side */}
+                <div className={`absolute w-full h-full ${isFlipped ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-all duration-700`}>
+                  <div className={`w-full h-full bg-gradient-to-br ${currentPlan.color} rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden`}>
+                    {/* Sophisticated Background Pattern */}
+                    <div className="absolute inset-0">
+                      <div className="absolute top-6 right-6 w-32 h-32 border-2 border-white/10 rounded-full"></div>
+                      <div className="absolute bottom-6 left-6 w-24 h-24 border-2 border-white/10 rounded-full"></div>
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 border border-white/5 rounded-full"></div>
+                      {/* Geometric patterns */}
+                      <svg className="absolute top-4 left-4 w-20 h-20 opacity-10" viewBox="0 0 100 100">
+                        <polygon points="50,5 95,90 5,90" fill="white" />
+                      </svg>
                     </div>
                     
-                    {/* Back Side */}
-                    <div className={`absolute w-full h-full backface-hidden rotate-y-180 ${!flippedCards[option.id] ? 'hidden md:block' : ''}`}>
-                      <div className="w-full h-full bg-white rounded-2xl shadow-xl p-6">
-                        <div className="flex justify-between items-start">
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                      {/* Header Section */}
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mr-4">
+                            <Stethoscope className="h-6 w-6" />
+                          </div>
                           <div>
-                            <h3 className="text-indigo-600 font-bold">Member Information</h3>
-                            <p className="text-gray-500 text-sm">Scan QR code for verification</p>
-                          </div>
-                          <div className="h-24 w-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <QrCode className="h-20 w-20 text-indigo-600" />
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="text-sm text-gray-600 space-y-2">
-                            <p className="flex items-center">
-                              <Phone className="h-4 w-4 mr-2 text-indigo-600" />
-                              <span>+91 98765 43210</span>
-                            </p>
-                            <p className="flex items-center">
-                              <Mail className="h-4 w-4 mr-2 text-indigo-600" />
-                              <span>alex.johnson@example.com</span>
-                            </p>
-                            <p className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2 text-indigo-600" />
-                              <span>123 Health Avenue, Bangalore</span>
-                            </p>
+                            <h2 className="text-2xl font-bold">Smart Care</h2>
+                            <div className="flex items-center">
+                              <span className="text-white/90 text-sm font-medium">{currentPlan.name}</span>
+                              <div className="w-2 h-2 bg-green-400 rounded-full ml-2 animate-pulse"></div>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="mt-4 text-xs text-center text-gray-500">
-                          <p>This card remains the property of Smart Health.</p>
-                          <p>If found, please return to nearest Smart Health center.</p>
+                        <div className="text-right">
+                          <div className="text-3xl font-bold">{currentPlan.price}</div>
+                          <div className="text-white/80 text-sm">per {currentPlan.period}</div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-center text-gray-500 text-sm mt-3 flex items-center justify-center">
-                  <span className="mr-1">{flippedCards[option.id] ? "Click to view front" : "Click to view back"}</span>
-                  <ChevronDown className={`h-4 w-4 transform transition-transform ${flippedCards[option.id] ? 'rotate-180' : ''}`} />
-                </p>
-              </div>
-            )
-          ))}
-        </div>
-        
-        {/* Membership Details with Tabs */}
-        <div className="bg-white rounded-2xl shadow-md overflow-hidden mb-12">
-          {membershipOptions.map(option => (
-            option.id === activeCard && (
-              <div key={option.id}>
-                <div className="p-6 pb-0">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-2xl font-bold text-indigo-600">{option.name} Membership</h3>
-                      <p className="text-gray-600 mt-1">{option.description}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-3xl font-bold text-indigo-600">{option.price}</span>
-                      <span className="text-sm text-gray-500">/{option.period}</span>
-                      <p className="text-xs text-gray-500 mt-1">Billed monthly, cancel anytime</p>
-                    </div>
-                  </div>
-                  
-                  {/* Tab Navigation */}
-                  <div className="flex border-b border-gray-200 mt-6">
-                    <button 
-                      className={`py-3 px-4 border-b-2 font-medium text-sm ${activeTab === 'benefits' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                      onClick={() => setActiveTab('benefits')}
-                    >
-                      Benefits
-                    </button>
-                    <button 
-                      className={`py-3 px-4 border-b-2 font-medium text-sm ${activeTab === 'facilities' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                      onClick={() => setActiveTab('facilities')}
-                    >
-                      Facilities
-                    </button>
-                    <button 
-                      className={`py-3 px-4 border-b-2 font-medium text-sm ${activeTab === 'testimonials' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                      onClick={() => setActiveTab('testimonials')}
-                    >
-                      Testimonials
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Tab Content */}
-                <div className="p-6 pt-4">
-                  {activeTab === 'benefits' && (
-                    <div className="space-y-4">
-                      {option.features.map((feature, index) => (
-                        <div key={index} className="flex items-start">
-                          <div className={`h-6 w-6 bg-${option.accentColor}/20 rounded-full flex items-center justify-center mr-3 mt-0.5`}>
-                            <Check className={`h-4 w-4 text-${option.accentColor}`} />
-                          </div>
-                          <p className="text-gray-700">{feature}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {activeTab === 'facilities' && (
-                    <div className="space-y-4">
-                      {option.facilities.map((facility, index) => (
-                        <div key={index} className="flex items-start">
-                          <div className={`h-6 w-6 bg-${option.accentColor}/20 rounded-full flex items-center justify-center mr-3 mt-0.5`}>
-                            <Check className={`h-4 w-4 text-${option.accentColor}`} />
-                          </div>
-                          <p className="text-gray-700">{facility}</p>
-                        </div>
-                      ))}
                       
-                      <div className="mt-4 bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600">
-                          <AlertCircle className="h-5 w-5 mr-2 text-indigo-500" />
-                          <span className="text-sm">Network facilities may vary by location. Check Smart Health app for details.</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {activeTab === 'testimonials' && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-start">
-                        <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                          <span className="text-lg font-bold text-indigo-600">{option.testimonial.name.charAt(0)}</span>
+                      {/* Member Section with Profile Image */}
+                      <div className="flex items-center space-x-4 my-6">
+                        <div className="relative">
+                          {profileImage ? (
+                            <img 
+                              src={profileImage} 
+                              alt="Profile" 
+                              className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/30">
+                              <Camera className="h-6 w-6 text-white/70" />
+                            </div>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
+                            className="absolute -bottom-1 -right-1 w-6 h-6 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </button>
                         </div>
                         <div>
-                          <div className="font-medium text-gray-800">{option.testimonial.name}</div>
-                          <div className="text-yellow-500 text-sm my-1">
-                            {renderStars(option.testimonial.rating)}
+                          <p className="text-white/80 text-sm">Member</p>
+                          <p className="text-xl font-bold">{memberData.name}</p>
+                          <p className="text-white/70 text-sm">Since {memberData.joinDate}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Footer Section */}
+                      <div className="flex justify-between items-end">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <p className="text-white/70 text-xs uppercase tracking-wide">Member ID</p>
+                            <p className="font-mono text-sm font-medium">{memberData.memberId}</p>
                           </div>
-                          <p className="text-gray-600 text-sm">{option.testimonial.text}</p>
+                          <div>
+                            <p className="text-white/70 text-xs uppercase tracking-wide">Valid Till</p>
+                            <p className="font-medium">{memberData.validTill}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <div className="bg-white/25 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                            <p className="text-xs font-bold tracking-wide">ACTIVE MEMBER</p>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Zap className="h-4 w-4" />
+                            <span className="text-xs font-medium">Premium Access</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
-                  
-                  <button className="w-full mt-8 bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center shadow-md">
-                    <span>Activate {option.name} Membership</span>
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </button>
+                  </div>
+                </div>
+
+                {/* Enhanced Back Side */}
+                <div className={`absolute w-full h-full ${!isFlipped ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-all duration-700`}>
+                  <div className="w-full h-full bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+                    <div className="h-full flex flex-col">
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-8">
+                        <div>
+                          <h3 className="text-indigo-600 font-bold text-xl">Member Information</h3>
+                          <p className="text-gray-500">For verification & emergency</p>
+                        </div>
+                        <div className="relative">
+                          <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center">
+                            <QrCode className="h-20 w-20 text-indigo-600" />
+                          </div>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Contact Information */}
+                      <div className="space-y-4 mb-8 flex-1">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <Phone className="h-5 w-5 text-indigo-600 mr-4" />
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wide">Phone</p>
+                              <p className="font-medium">{memberData.phone}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <Mail className="h-5 w-5 text-indigo-600 mr-4" />
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-500 uppercase tracking-wide">Email</p>
+                              <p className="font-medium text-sm truncate">{memberData.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start p-3 bg-gray-50 rounded-xl">
+                            <MapPin className="h-5 w-5 text-indigo-600 mr-4 mt-1" />
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wide">Address</p>
+                              <p className="font-medium text-sm leading-tight">{memberData.address}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Emergency Info */}
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                        <h4 className="text-red-700 font-semibold text-sm mb-2">Emergency Information</h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-red-600">Blood Group: <span className="font-bold">{memberData.bloodGroup}</span></p>
+                          </div>
+                          <div>
+                            <p className="text-red-600">DOB: {memberData.dateOfBirth}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Footer */}
+                      <div className="pt-4 border-t border-gray-200">
+                        <div className="flex justify-between text-xs text-gray-600 mb-3">
+                          <span>Member since {memberData.joinDate}</span>
+                          <span>24/7 Medical Support</span>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-gray-400">© 2025 Smart Care Health • Confidential Document</p>
+                          <p className="text-xs text-red-500 font-medium mt-1">Report if found • Reward ₹500</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )
-          ))}
-        </div>
-        
-        {/* Key Benefits Section */}
-        <div className="mb-12">
-          <h3 className="text-xl font-bold text-indigo-600 mb-6">Key Benefits of Smart Health 2025</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-5 rounded-xl shadow-md">
-              <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <Clock className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h4 className="font-bold text-gray-800 mb-2">24/7 Access</h4>
-              <p className="text-gray-600">Round-the-clock healthcare support with instant virtual consultations anytime you need them.</p>
             </div>
-            
-            <div className="bg-white p-5 rounded-xl shadow-md">
-              <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <MessageSquare className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h4 className="font-bold text-gray-800 mb-2">AI Health Assistant</h4>
-              <p className="text-gray-600">Smart AI-powered health companion that monitors your vitals and provides personalized recommendations.</p>
-            </div>
-            
-            <div className="bg-white p-5 rounded-xl shadow-md">
-              <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <Calendar className="h-6 w-6 text-indigo-600" />
-              </div>
-              <h4 className="font-bold text-gray-800 mb-2">Seamless Scheduling</h4>
-              <p className="text-gray-600">Book appointments, manage prescriptions, and track your health journey all in one place.</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* All Membership Cards - Small Card View */}
-        <div>
-          <div 
-            className="flex justify-between items-center cursor-pointer mb-6"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            <h3 className="text-xl font-bold text-indigo-600">Compare All Plans</h3>
-            <div className="bg-indigo-100 rounded-full p-1">
-              {showDetails ? (
-                <ChevronUp className="h-5 w-5 text-indigo-600" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-indigo-600" />
-              )}
-            </div>
-          </div>
-          
-          {showDetails && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {membershipOptions.map(option => (
-                <div 
-                  key={option.id} 
-                  className={`bg-gradient-to-br ${option.color} rounded-xl shadow-md p-5 text-white cursor-pointer transition-transform hover:scale-105 hover:shadow-lg`}
-                  onClick={() => setActiveCard(option.id)}
+
+            {/* Card Controls */}
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-gray-500 text-sm flex items-center">
+                <CreditCard className="h-4 w-4 mr-2" />
+                Click card to flip and view details
+              </p>
+              
+              <div className="flex space-x-4">
+                <button
+                  onClick={downloadCard}
+                  disabled={isDownloading}
+                  className="flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:shadow-lg transition-all disabled:opacity-50 font-medium"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center">
-                      {getCardIcon(option.id)}
-                      <h3 className="font-bold ml-2">{option.name}</h3>
-                    </div>
-                    <div className="h-8 w-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      {activeCard === option.id && <Check className="h-4 w-4" />}
-                    </div>
+                  {isDownloading ? (
+                    <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-5 w-5 mr-2" />
+                  )}
+                  {isDownloading ? 'Generating...' : 'Download Card'}
+                </button>
+                
+                <button
+                  onClick={() => setIsFlipped(!isFlipped)}
+                  className="flex items-center px-6 py-4 bg-white text-gray-700 rounded-2xl hover:bg-gray-50 shadow-lg transition-all border border-gray-200"
+                >
+                  <RefreshCw className="h-5 w-5 mr-2" />
+                  Flip Card
+                </button>
+              </div>
+            </div>
+
+            {/* Hidden file input for image upload */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              className="hidden"
+            />
+          </div>
+
+          {/* Enhanced Plan Details */}
+          <div className="space-y-8">
+            {/* Main Plan Card */}
+            <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+              <div className="flex items-start justify-between mb-8">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-16 h-16 bg-gradient-to-r ${currentPlan.color} rounded-2xl flex items-center justify-center text-white shadow-lg`}>
+                    {currentPlan.icon}
                   </div>
-                  
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold">{option.price}</div>
-                    <div className="text-sm text-blue-50">per {option.period}</div>
-                  </div>
-                  
-                  <div className="mt-4 text-sm">
-                    <p>{option.features[0]}</p>
-                    <p className="mt-1">{option.features.length > 1 ? option.features[1] : ''}</p>
-                    {option.features.length > 2 && (
-                      <p className="text-xs mt-2 text-blue-50">+ {option.features.length - 2} more benefits</p>
-                    )}
+                  <div>
+                    <h3 className="text-3xl font-bold text-gray-800">{currentPlan.name}</h3>
+                    <p className="text-gray-600 text-lg">{currentPlan.description}</p>
                   </div>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    {currentPlan.price}
+                  </div>
+                  <div className="text-gray-500">per {currentPlan.period}</div>
+                </div>
+              </div>
+
+              {/* Feature Grid */}
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
+                  <Calendar className="h-10 w-10 text-indigo-600 mx-auto mb-3" />
+                  <p className="font-bold text-lg">24/7 Access</p>
+                  <p className="text-gray-600">Round the clock support</p>
+                </div>
+                <div className="text-center p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl">
+                  <Clock className="h-10 w-10 text-emerald-600 mx-auto mb-3" />
+                  <p className="font-bold text-lg">{currentPlan.hospitals}</p>
+                  <p className="text-gray-600">Network coverage</p>
+                </div>
+              </div>
+
+              {/* Features List */}
+              <div className="mb-8">
+                <h4 className="font-bold text-gray-800 text-lg mb-4">Premium Benefits</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {currentPlan.features.map((feature, index) => (
+                    <div key={index} className="flex items-center p-3 bg-gray-50 rounded-xl">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <span className="text-gray-700 font-medium">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <button className={`w-full bg-gradient-to-r ${currentPlan.color} text-white py-5 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105`}>
+                Activate {currentPlan.name} Plan
+              </button>
             </div>
-          )}
-        </div>
-        
-        {/* FAQ Section */}
-        <div className="mt-16">
-          <h3 className="text-xl font-bold text-indigo-600 mb-6">Frequently Asked Questions</h3>
-          
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl shadow-sm p-5">
-              <h4 className="font-semibold text-gray-800">How do I use my Smart Health membership card?</h4>
-              <p className="text-gray-600 mt-2">Your digital membership card can be accessed through the Smart Health app. Simply present the QR code when visiting our network facilities for quick verification.</p>
+
+            {/* Enhanced Stats Grid */}
+            <div className="grid grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl shadow-lg text-center border border-gray-100 hover:shadow-xl transition-shadow">
+                <div className="text-3xl font-bold text-indigo-600 mb-2">10M+</div>
+                <div className="text-gray-600 font-medium">Active Members</div>
+                <div className="text-xs text-gray-500 mt-1">Trusted globally</div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-lg text-center border border-gray-100 hover:shadow-xl transition-shadow">
+                <div className="text-3xl font-bold text-indigo-600 mb-2">1500+</div>
+                <div className="text-gray-600 font-medium">Partner Hospitals</div>
+                <div className="text-xs text-gray-500 mt-1">Worldwide network</div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-lg text-center border border-gray-100 hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-center mb-2">
+                  <Star className="h-6 w-6 text-yellow-400 fill-current mr-1" />
+                  <span className="text-3xl font-bold text-indigo-600">4.8</span>
+                </div>
+                <div className="text-gray-600 font-medium">User Rating</div>
+                <div className="text-xs text-gray-500 mt-1">Excellent service</div>
+              </div>
             </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-5">
-              <h4 className="font-semibold text-gray-800">Can I upgrade my membership plan?</h4>
-              <p className="text-gray-600 mt-2">Yes, you can upgrade your membership plan at any time. The new benefits will be prorated from the date of upgrade. Use the Smart Health app or contact our customer service to make changes.</p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-5">
-              <h4 className="font-semibold text-gray-800">How do I add family members to my Family plan?</h4>
-              <p className="text-gray-600 mt-2">After activating your Family plan, you can add up to 4 family members through the "Family Management" section in your Smart Health app dashboard.</p>
+
+            {/* App Download Section */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h4 className="text-xl font-bold mb-2">Download Smart Care App</h4>
+                  <p className="text-gray-300">Manage your health on the go</p>
+                </div>
+                <Smartphone className="h-12 w-12 text-gray-300" />
+              </div>
+              <div className="flex space-x-4">
+                <button className="flex items-center px-6 py-3 bg-white text-gray-900 rounded-xl font-medium hover:bg-gray-100 transition-colors">
+                  <span>Google Play</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-
-
-        {/* <EpisodesWithVideo/> */}
       </div>
     </div>
   );
-}
+};

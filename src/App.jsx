@@ -45,6 +45,7 @@ import { Toaster } from 'react-hot-toast';
 import SDKVerification from './components/SDKVerification';
 import VideoCallComponent from './components/Features/VideoCall';
 import MediCatePage from './pages/Medifarma/Productpage/CategroyPage';
+import DoctorDetailsPage from './pages/Doctors/DoctorDetail';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,6 +90,7 @@ function App() {
 
               <Route path="/" element={<Home />} />
               <Route path="/doctors" element={<DoctorPage />} />
+              <Route path='/doctor-details/:id' element={<DoctorDetailsPage />} />
 
            
               <Route path="/consultation/:specialtyId" element={<DoctorConsultationPlatform />} />

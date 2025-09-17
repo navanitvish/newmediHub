@@ -62,8 +62,10 @@ const DoctorPage = () => {
   // Filter doctors based on search term
 
   // Handle doctor selection
-  const handleDoctorClick = (doctor) => {
-    navigate("/doctor-details", { state: { doctor } });
+ const handleDoctorClick = (doctor) => {
+    // Fixed: Use the actual doctor ID instead of hardcoded route
+    const doctorId = doctor._id || doctor.id || doctor.doctorId?._id;
+    navigate(`/doctor-details/${doctorId}`, { state: { doctor } });
   };
 
   if (isLoading) {
@@ -140,7 +142,7 @@ const DoctorPage = () => {
                 <DoctorSearchForm />
               </div>
 
-              <div className="flex justify-center flex-wrap gap-3 mt-6">
+              {/* <div className="flex justify-center flex-wrap gap-3 mt-6">
                 <button className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-sm transition-all flex items-center gap-1 hover:scale-105">
                   <Calendar size={16} /> Book Appointment
                 </button>
@@ -153,7 +155,7 @@ const DoctorPage = () => {
                 <button className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full text-sm transition-all flex items-center gap-1 hover:scale-105">
                   <Filter size={16} /> Filter Options
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -208,22 +210,20 @@ const DoctorPage = () => {
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className={`p-4 rounded-full transition-all duration-300 transform hover:scale-105 ${
-                currentIndex === 0
+              className={`p-4 rounded-full transition-all duration-300 transform hover:scale-105 ${currentIndex === 0
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl"
-              }`}
+                }`}
             >
               <ChevronLeft size={22} />
             </button>
             <button
               onClick={handleNext}
               disabled={currentIndex >= maxIndex}
-              className={`p-4 rounded-full transition-all duration-300 transform hover:scale-105 ${
-                currentIndex >= maxIndex
+              className={`p-4 rounded-full transition-all duration-300 transform hover:scale-105 ${currentIndex >= maxIndex
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl"
-              }`}
+                }`}
             >
               <ChevronRight size={22} />
             </button>
@@ -288,24 +288,24 @@ const DoctorPage = () => {
                   </div>
 
                   <div className="space-y-3 text-sm text-gray-600 mb-6">
-                   <div className="grid grid-cols-2 gap-2">
-                     <div className="flex items-center justify-center">
-                      <div className="flex items-center bg-gray-50 rounded-lg px-3 py-2">
-                        <Clock size={16} className="mr-2 text-blue-500" />
-                        <span className="font-medium">
-                          {doctor?.doctorId?.experience} exp
-                        </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center justify-center">
+                        <div className="flex items-center bg-gray-50 rounded-lg px-3 py-2">
+                          <Clock size={16} className="mr-2 text-blue-500" />
+                          <span className="font-medium">
+                            {doctor?.doctorId?.experience} exp
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <div className="flex items-center bg-gray-50 rounded-lg px-3 py-2">
+                          <MapPin size={16} className="mr-2 text-indigo-500" />
+                          <span className="font-medium">
+                            {doctor?.doctorId?.address}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center">
-                      <div className="flex items-center bg-gray-50 rounded-lg px-3 py-2">
-                        <MapPin size={16} className="mr-2 text-indigo-500" />
-                        <span className="font-medium">
-                          {doctor?.doctorId?.address}
-                        </span>
-                      </div>
-                    </div>
-                   </div>
                     <div className="text-center">
                       <div className="inline-flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg px-4 py-2">
                         <span className="text-sm font-medium">
@@ -320,7 +320,7 @@ const DoctorPage = () => {
           </div>
         </div>
 
-        
+
       </div>
 
       {/* Enhanced How It Works Section */}

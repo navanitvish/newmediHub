@@ -196,8 +196,8 @@ const ModernTestimonials = () => {
         </div>
 
         {/* Main Dual Testimonials Display */}
-        <div className="relative mb-16">
-          <div className="max-w-6xl mx-auto">
+        <div className="relative ">
+          <div className="max-w-7xl mx-auto">
             {/* Two Testimonial Cards Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               <TestimonialCard testimonial={currentTestimonials[0]} />
@@ -238,46 +238,7 @@ const ModernTestimonials = () => {
           </div>
         </div>
 
-        {/* Secondary Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {testimonials.slice(0, 3).map((testimonial, index) => (
-            <div 
-              key={testimonial.id}
-              className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer"
-              onClick={() => goToTestimonials(index * 2)}
-            >
-              {/* Mini User Info */}
-              <div className="flex items-center mb-4">
-                <img 
-                  src={testimonial.avatar} 
-                  alt={testimonial.name}
-                  className="w-12 h-12 rounded-xl object-cover mr-3"
-                />
-                <div>
-                  <h4 className="font-bold text-gray-900 text-sm">{testimonial.name}</h4>
-                  <p className="text-xs text-gray-500">{testimonial.role}</p>
-                </div>
-                
-                {/* Rating */}
-                <div className="ml-auto flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-semibold text-gray-700">{testimonial.rating}</span>
-                </div>
-              </div>
-              
-              {/* Mini Content */}
-              <p className="text-sm text-gray-600 line-clamp-3 group-hover:text-gray-800 transition-colors duration-300">
-                "{testimonial.content.substring(0, 120)}..."
-              </p>
-              
-              {/* Highlight */}
-              <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r ${testimonial.gradient} text-white text-xs font-medium mt-3 opacity-90`}>
-                <Heart className="w-3 h-3" />
-                {testimonial.highlight}
-              </div>
-            </div>
-          ))}
-        </div>
+       
       </div>
     </div>
   );
