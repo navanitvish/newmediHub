@@ -1,112 +1,171 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Heart, Shield, Users, Award, Download, QrCode, Phone, Mail, MapPin,
   Activity, ShieldCheck, Stethoscope, Calendar, Clock, Star, Camera,
   Edit3, RefreshCw, CreditCard, Zap, Globe, Smartphone
 } from 'lucide-react';
 
-// API integration (commented out)
-// import { useGetQuery } from '../../../api/apiCall';
-// import API_ENDPOINTS from '../../../api/apiEndpoint';
+// API integration
+import { useGetQuery } from "../../api/apiCall";
+import API_ENDPOINTS from "../../api/apiEndpoint";
+import Loading from './../../components/UI/Loading';
+import useAuth from "../../hooks/useAuth";
+
 
 export default function SmartCareCard() {
   const [selectedPlan, setSelectedPlan] = useState('premium');
   const [isFlipped, setIsFlipped] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [plans, setPlans] = useState([]);
   const cardRef = useRef(null);
   const fileInputRef = useRef(null);
+    const { user } = useAuth();
+     const userData = user?.result || {};
 
-  // API calls (commented out for now)
-  /*
+  // API calls
   const {
-    data: planData,
-    isLoading: plansLoading,
-    error: plansError,
-    refetch: refetchPlans
-  } = useGetQuery(`${API_ENDPOINTS.PLANS.GET_ALL}`);
+    data: cardsData,
+    isLoading: cardsLoading,
+    error: cardsError,
+    refetch: refetchCards
+  } = useGetQuery(`${API_ENDPOINTS.CARDS.GET_ALL_MEMBERSHIP}`);
 
-  const {
-    data: userData,
-    isLoading: userLoading,
-    error: userError,
-    refetch: refetchUser
-  } = useGetQuery(`${API_ENDPOINTS.USER.GET_PROFILE}/${userId}`);
-
-  const {
-    data: membershipData,
-    isLoading: membershipLoading,
-    error: membershipError,
-    refetch: refetchMembership
-  } = useGetQuery(`${API_ENDPOINTS.MEMBERSHIP.GET_DETAILS}/${memberId}`);
-  */
-
-  // Mock API data (replace with actual API data)
+  // Mock member data (you can replace this with actual member API call)
   const memberData = {
-    name: 'Alexander Johnson',
+    name: userData.name || 'John Doe',
     memberId: 'SC-2025-4391',
     phone: '+91 98765 43210',
-    email: 'alex.johnson@example.com',
-    address: '123 Health Avenue, Bangalore',
+    email: userData.email || '2Ss6b@example.com',
+    address: userData.address || '123 Main Street, City, Country',
     validTill: '04/2028',
     joinDate: 'Jan 2025',
-    emergencyContact: '+91 98765 43211',
+    emergencyContact: userData.mobile || '+91 98765 43210',
     bloodGroup: 'O+',
     dateOfBirth: '15/08/1990'
   };
 
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Essential',
-      color: 'from-cyan-400 via-blue-500 to-blue-600',
-      accentColor: 'bg-cyan-500',
-      price: '₹499',
-      period: 'monthly',
-      icon: <Heart className="h-5 w-5" />,
-      features: ['Basic checkups', 'Online booking', 'Digital records', 'Telemedicine'],
-      hospitals: '500+ hospitals',
-      description: 'Perfect for basic healthcare needs'
-    },
-    {
-      id: 'family',
-      name: 'Family Care',
-      color: 'from-emerald-400 via-teal-500 to-green-600',
-      accentColor: 'bg-emerald-500',
-      price: '₹1299',
-      period: 'monthly',
-      icon: <Users className="h-5 w-5" />,
-      features: ['4 members coverage', 'Pediatric care', 'Dental checkups', 'Vision care'],
-      hospitals: '750+ hospitals',
-      description: 'Comprehensive family health solution'
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      color: 'from-violet-500 via-purple-600 to-indigo-700',
-      accentColor: 'bg-violet-600',
-      price: '₹899',
-      period: 'monthly',
-      icon: <Shield className="h-5 w-5" />,
-      features: ['Priority booking', 'Specialist care', 'Health screening', 'Annual checkup'],
-      hospitals: '1000+ hospitals',
-      description: 'Advanced healthcare with priority access'
-    },
-    {
-      id: 'platinum',
-      name: 'Platinum Elite',
-      color: 'from-rose-500 via-pink-600 to-purple-700',
-      accentColor: 'bg-rose-600',
-      price: '₹1999',
-      period: 'monthly',
-      icon: <Award className="h-5 w-5" />,
-      features: ['VIP access', 'Global coverage', 'Concierge service', 'Home visits'],
-      hospitals: 'Worldwide network',
-      description: 'Ultimate premium healthcare experience'
-    }
-  ];
+  // Transform API data to match UI format
+  useEffect(() => {
+    if (cardsData && cardsData.data) {
+      const transformedPlans = cardsData.data.map((card, index) => {
+        // Define color schemes based on card type or index
+        const colorSchemes = {
+          basic: {
+            color: 'from-cyan-400 via-blue-500 to-blue-600',
+            accentColor: 'bg-cyan-500',
+            icon: <Heart className="h-5 w-5" />
+          },
+          family: {
+            color: 'from-emerald-400 via-teal-500 to-green-600',
+            accentColor: 'bg-emerald-500',
+            icon: <Users className="h-5 w-5" />
+          },
+          premium: {
+            color: 'from-violet-500 via-purple-600 to-indigo-700',
+            accentColor: 'bg-violet-600',
+            icon: <Shield className="h-5 w-5" />
+          },
+          platinum: {
+            color: 'from-rose-500 via-pink-600 to-purple-700',
+            accentColor: 'bg-rose-600',
+            icon: <Award className="h-5 w-5" />
+          }
+        };
 
-  const currentPlan = plans.find(plan => plan.id === selectedPlan);
+        // Get color scheme based on card type or fallback to index
+        const scheme = colorSchemes[card.type] || colorSchemes[Object.keys(colorSchemes)[index % 4]];
+
+        return {
+          id: card._id,
+          name: card.title,
+          type: card.type,
+          ...scheme,
+          price: `₹${card.price}`,
+          period: 'monthly',
+          features: card.features || [],
+          hospitals: card.type === 'basic' ? '500+ hospitals' : 
+                    card.type === 'family' ? '750+ hospitals' : 
+                    card.type === 'premium' ? '1000+ hospitals' : 'Worldwide network',
+          description: card.description,
+          validThru: card.validThru,
+          isActive: card.isActive,
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt
+        };
+      });
+
+      setPlans(transformedPlans);
+      
+      // Set default selected plan to the first active plan or first plan
+      const activeCard = transformedPlans.find(plan => plan.isActive) || transformedPlans[0];
+      if (activeCard) {
+        setSelectedPlan(activeCard.id);
+      }
+    }
+  }, [cardsData]);
+
+  // Loading state
+  if (cardsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loading />
+          <p className="mt-4 text-gray-600 text-lg">Loading your healthcare plans...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (cardsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-xl max-w-md mx-auto">
+          <div className="text-red-500 mb-4">
+            <Activity className="h-12 w-12 mx-auto mb-4" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Unable to Load Plans</h2>
+          <p className="text-gray-600 mb-6">
+            {cardsError.message || 'Something went wrong while loading your healthcare plans.'}
+          </p>
+          <button
+            onClick={() => refetchCards()}
+            className="flex items-center mx-auto px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // No plans available
+  if (!plans.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-xl max-w-md mx-auto">
+          <div className="text-gray-400 mb-4">
+            <CreditCard className="h-12 w-12 mx-auto mb-4" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">No Plans Available</h2>
+          <p className="text-gray-600 mb-6">
+            No healthcare plans are currently available. Please contact support or try again later.
+          </p>
+          <button
+            onClick={() => refetchCards()}
+            className="flex items-center mx-auto px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const currentPlan = plans.find(plan => plan.id === selectedPlan) || plans[0];
 
   // Handle profile image upload
   const handleImageUpload = (event) => {
@@ -120,7 +179,7 @@ export default function SmartCareCard() {
     }
   };
 
-  // Mock API call for downloading card
+  // Download card function
   const downloadCard = async () => {
     setIsDownloading(true);
     
@@ -136,15 +195,15 @@ export default function SmartCareCard() {
       
       // Create sophisticated gradient background
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      if (currentPlan.id === 'basic') {
+      if (currentPlan.type === 'basic') {
         gradient.addColorStop(0, '#22d3ee');
         gradient.addColorStop(0.5, '#3b82f6');
         gradient.addColorStop(1, '#2563eb');
-      } else if (currentPlan.id === 'family') {
+      } else if (currentPlan.type === 'family') {
         gradient.addColorStop(0, '#34d399');
         gradient.addColorStop(0.5, '#14b8a6');
         gradient.addColorStop(1, '#059669');
-      } else if (currentPlan.id === 'premium') {
+      } else if (currentPlan.type === 'premium') {
         gradient.addColorStop(0, '#8b5cf6');
         gradient.addColorStop(0.5, '#7c3aed');
         gradient.addColorStop(1, '#4338ca');
@@ -179,7 +238,7 @@ export default function SmartCareCard() {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.fillText(`Member ID: ${memberData.memberId}`, 60, 230);
       ctx.fillText(`Plan: ${currentPlan.name}`, 60, 280);
-      ctx.fillText(`Valid Till: ${memberData.validTill}`, 60, 330);
+      ctx.fillText(`Valid Till: ${currentPlan.validThru || memberData.validTill}`, 60, 330);
       
       // Add plan badge
       ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
@@ -188,7 +247,7 @@ export default function SmartCareCard() {
       
       ctx.fillStyle = 'white';
       ctx.font = 'bold 18px Inter, Arial';
-      ctx.fillText('ACTIVE MEMBER', 80, 410);
+      ctx.fillText(currentPlan.isActive ? 'ACTIVE MEMBER' : 'INACTIVE', 80, 410);
       
       // Download
       const link = document.createElement('a');
@@ -198,6 +257,7 @@ export default function SmartCareCard() {
       
     } catch (error) {
       console.error('Download failed:', error);
+      alert('Failed to download card. Please try again.');
     } finally {
       setIsDownloading(false);
     }
@@ -227,6 +287,10 @@ export default function SmartCareCard() {
               <Globe className="h-5 w-5 text-green-600 mr-2" />
               <span className="text-green-600 font-semibold">Global Coverage</span>
             </div>
+            <div className="inline-flex items-center px-6 py-3 bg-blue-100 rounded-full">
+              <Calendar className="h-5 w-5 text-blue-600 mr-2" />
+              <span className="text-blue-600 font-semibold">{plans.length} Plans Available</span>
+            </div>
           </div>
         </div>
 
@@ -236,22 +300,42 @@ export default function SmartCareCard() {
             <button
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
+              disabled={!plan.isActive}
               className={`group relative flex flex-col items-center px-8 py-6 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
                 selectedPlan === plan.id
                   ? `bg-gradient-to-r ${plan.color} text-white shadow-2xl shadow-purple-500/25`
-                  : 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg hover:shadow-xl'
+                  : plan.isActive 
+                    ? 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg hover:shadow-xl'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
               }`}
             >
-              <div className={`p-3 rounded-full mb-3 ${selectedPlan === plan.id ? 'bg-white/20' : plan.accentColor}`}>
-                <div className={selectedPlan === plan.id ? 'text-white' : 'text-white'}>
+              <div className={`p-3 rounded-full mb-3 ${
+                selectedPlan === plan.id 
+                  ? 'bg-white/20' 
+                  : plan.isActive 
+                    ? plan.accentColor 
+                    : 'bg-gray-300'
+              }`}>
+                <div className={selectedPlan === plan.id ? 'text-white' : plan.isActive ? 'text-white' : 'text-gray-500'}>
                   {plan.icon}
                 </div>
               </div>
               <span className="font-bold text-lg">{plan.name}</span>
-              <span className={`text-sm ${selectedPlan === plan.id ? 'text-white/80' : 'text-gray-500'}`}>
+              <span className={`text-sm ${
+                selectedPlan === plan.id 
+                  ? 'text-white/80' 
+                  : plan.isActive 
+                    ? 'text-gray-500' 
+                    : 'text-gray-400'
+              }`}>
                 {plan.price}/{plan.period}
               </span>
-              {selectedPlan === plan.id && (
+              {!plan.isActive && (
+                <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  Inactive
+                </div>
+              )}
+              {selectedPlan === plan.id && plan.isActive && (
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
                   <Star className="h-3 w-3 text-white fill-current" />
                 </div>
@@ -272,7 +356,7 @@ export default function SmartCareCard() {
               >
                 {/* Enhanced Front Side */}
                 <div className={`absolute w-full h-full ${isFlipped ? 'opacity-0 pointer-events-none' : 'opacity-100'} transition-all duration-700`}>
-                  <div className={`w-full h-full bg-gradient-to-br ${currentPlan.color} rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden`}>
+                  <div className={`w-full h-full bg-gradient-to-br ${currentPlan.color} rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden ${!currentPlan.isActive ? 'opacity-75' : ''}`}>
                     {/* Sophisticated Background Pattern */}
                     <div className="absolute inset-0">
                       <div className="absolute top-6 right-6 w-32 h-32 border-2 border-white/10 rounded-full"></div>
@@ -295,7 +379,7 @@ export default function SmartCareCard() {
                             <h2 className="text-2xl font-bold">Smart Care</h2>
                             <div className="flex items-center">
                               <span className="text-white/90 text-sm font-medium">{currentPlan.name}</span>
-                              <div className="w-2 h-2 bg-green-400 rounded-full ml-2 animate-pulse"></div>
+                              <div className={`w-2 h-2 ${currentPlan.isActive ? 'bg-green-400' : 'bg-red-400'} rounded-full ml-2 ${currentPlan.isActive ? 'animate-pulse' : ''}`}></div>
                             </div>
                           </div>
                         </div>
@@ -308,9 +392,9 @@ export default function SmartCareCard() {
                       {/* Member Section with Profile Image */}
                       <div className="flex items-center space-x-4 my-6">
                         <div className="relative">
-                          {profileImage ? (
+                          {userData ? (
                             <img 
-                              src={profileImage} 
+                              src={userData.image || "https://cdn-icons-png.flaticon.com/512/194/194915.png"} 
                               alt="Profile" 
                               className="w-16 h-16 rounded-full object-cover border-2 border-white/30"
                             />
@@ -345,16 +429,18 @@ export default function SmartCareCard() {
                           </div>
                           <div>
                             <p className="text-white/70 text-xs uppercase tracking-wide">Valid Till</p>
-                            <p className="font-medium">{memberData.validTill}</p>
+                            <p className="font-medium">{currentPlan.validThru || memberData.validTill}</p>
                           </div>
                         </div>
                         <div className="flex flex-col items-end space-y-2">
-                          <div className="bg-white/25 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
-                            <p className="text-xs font-bold tracking-wide">ACTIVE MEMBER</p>
+                          <div className={`${currentPlan.isActive ? 'bg-green-500/25' : 'bg-red-500/25'} backdrop-blur-sm px-4 py-2 rounded-full border ${currentPlan.isActive ? 'border-green-400/20' : 'border-red-400/20'}`}>
+                            <p className="text-xs font-bold tracking-wide">
+                              {currentPlan.isActive ? 'ACTIVE MEMBER' : 'INACTIVE'}
+                            </p>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Zap className="h-4 w-4" />
-                            <span className="text-xs font-medium">Premium Access</span>
+                            <span className="text-xs font-medium capitalize">{currentPlan.type} Access</span>
                           </div>
                         </div>
                       </div>
@@ -376,7 +462,7 @@ export default function SmartCareCard() {
                           <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center">
                             <QrCode className="h-20 w-20 text-indigo-600" />
                           </div>
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <div className={`absolute -top-2 -right-2 w-6 h-6 ${currentPlan.isActive ? 'bg-green-500' : 'bg-red-500'} rounded-full flex items-center justify-center`}>
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           </div>
                         </div>
@@ -449,8 +535,8 @@ export default function SmartCareCard() {
               <div className="flex space-x-4">
                 <button
                   onClick={downloadCard}
-                  disabled={isDownloading}
-                  className="flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:shadow-lg transition-all disabled:opacity-50 font-medium"
+                  disabled={isDownloading || !currentPlan.isActive}
+                  className="flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {isDownloading ? (
                     <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
@@ -490,8 +576,20 @@ export default function SmartCareCard() {
                     {currentPlan.icon}
                   </div>
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-800">{currentPlan.name}</h3>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-3xl font-bold text-gray-800">{currentPlan.name}</h3>
+                      {!currentPlan.isActive && (
+                        <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-medium rounded-full">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
                     <p className="text-gray-600 text-lg">{currentPlan.description}</p>
+                    {currentPlan.createdAt && (
+                      <p className="text-gray-400 text-sm mt-1">
+                        Created: {new Date(currentPlan.createdAt).toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
@@ -518,22 +616,37 @@ export default function SmartCareCard() {
 
               {/* Features List */}
               <div className="mb-8">
-                <h4 className="font-bold text-gray-800 text-lg mb-4">Premium Benefits</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {currentPlan.features.map((feature, index) => (
-                    <div key={index} className="flex items-center p-3 bg-gray-50 rounded-xl">
-                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <h4 className="font-bold text-gray-800 text-lg mb-4">Plan Benefits</h4>
+                {currentPlan.features && currentPlan.features.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3">
+                    {currentPlan.features.map((feature, index) => (
+                      <div key={index} className="flex items-center p-3 bg-gray-50 rounded-xl">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-gray-700 font-medium">{feature}</span>
                       </div>
-                      <span className="text-gray-700 font-medium">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No specific features listed for this plan.</p>
+                    <p className="text-sm">Contact support for detailed benefits.</p>
+                  </div>
+                )}
               </div>
 
               {/* CTA Button */}
-              <button className={`w-full bg-gradient-to-r ${currentPlan.color} text-white py-5 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105`}>
-                Activate {currentPlan.name} Plan
+              <button 
+                disabled={!currentPlan.isActive}
+                className={`w-full py-5 rounded-2xl font-bold text-lg transition-all transform ${
+                  currentPlan.isActive 
+                    ? `bg-gradient-to-r ${currentPlan.color} text-white hover:shadow-2xl hover:scale-105`
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {currentPlan.isActive ? `Activate ${currentPlan.name} Plan` : 'Plan Inactive'}
               </button>
             </div>
 
@@ -559,6 +672,33 @@ export default function SmartCareCard() {
               </div>
             </div>
 
+            {/* API Data Stats */}
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-100">
+              <h4 className="font-bold text-indigo-800 text-lg mb-4 flex items-center">
+                <Activity className="h-5 w-5 mr-2" />
+                Live Data Stats
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-indigo-600">{plans.length}</div>
+                  <div className="text-sm text-indigo-700">Available Plans</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {plans.filter(plan => plan.isActive).length}
+                  </div>
+                  <div className="text-sm text-green-700">Active Plans</div>
+                </div>
+              </div>
+              <button
+                onClick={() => refetchCards()}
+                className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Data
+              </button>
+            </div>
+
             {/* App Download Section */}
             <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
               <div className="flex items-center justify-between mb-6">
@@ -571,6 +711,9 @@ export default function SmartCareCard() {
               <div className="flex space-x-4">
                 <button className="flex items-center px-6 py-3 bg-white text-gray-900 rounded-xl font-medium hover:bg-gray-100 transition-colors">
                   <span>Google Play</span>
+                </button>
+                <button className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
+                  <span>App Store</span>
                 </button>
               </div>
             </div>

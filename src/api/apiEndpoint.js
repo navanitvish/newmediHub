@@ -47,6 +47,10 @@ const API_ENDPOINTS = {
     SINGLE_BRAND: '/api/v1/brands/getOne',
     GET_TOP_BOOKED: '/api/v1/brands/topMustBrand',
   },
+  
+  CARDS:{
+    GET_ALL_MEMBERSHIP:"/api/v1/membership-card/get",
+  },
 
 
   ADMIN: {
