@@ -14,6 +14,7 @@ import {
   Minus,
   Trash2,
   Stethoscope,
+  Shield, Clock
 } from "lucide-react";
 import useAuth from "../hooks/useAuth";
 
@@ -37,9 +38,31 @@ const CheckoutPage = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
 
+  // Add this to your CheckoutPage component state
+  const [selectedCardPlan, setSelectedCardPlan] = useState(null);
+  const [cardPlanDuration, setCardPlanDuration] = useState('quarterly');
+
+  // Add this function to handle card data from navigation
+  // Add this function to handle card data from navigation
+  useEffect(() => {
+    // Get card data from navigation state (for card purchases)
+    const { cardData } = location.state || {};
+
+    if (cardData) {
+      setSelectedCardPlan(cardData);
+      // Set form data for card purchase
+      setFormData(prev => ({
+        ...prev,
+        cardId: cardData.id,
+        cardPlanType: cardPlanDuration
+      }));
+    }
+  }, [location.state, cardPlanDuration]);
+
+
   // Get booking data from navigation state (for doctor appointments)
   const { bookingData } = location.state || {};
-  
+
   const userData = React.useMemo(() => user?.result || {}, [user]);
   console.log(user);
   console.log("Booking Data:", bookingData);
@@ -57,10 +80,10 @@ const CheckoutPage = () => {
     (total, item) => total + item.price * item.quantity,
     0
   );
-  
-  const appointmentFee = bookingData ? 
+
+  const appointmentFee = bookingData ?
     parseInt(bookingData.doctor.consultationFee.replace('₹', '').replace(',', '')) : 0;
-  
+
   const totalAmount = cartTotal + appointmentFee;
   const discountAmount = Math.round(totalAmount * 0.1);
   const finalAmount = totalAmount - discountAmount;
@@ -169,214 +192,260 @@ const CheckoutPage = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const validateStep = (step) => {
-    switch (step) {
-      case 1:
-        return isAuthenticated && user; // Just check if user is authenticated
-      case 2:
-        // If booking data exists, appointment is already scheduled
-        if (bookingData) return true;
-        return formData.date && formData.timeSlot;
-      case 3:
-        return true; // Razorpay handles payment validation
-      default:
-        return false;
-    }
-  };
+ // Update the step validation
+const validateStep = (step) => {
+  switch (step) {
+    case 1:
+      return isAuthenticated && user;
+    case 2:
+      if (selectedCardPlan) return cardPlanDuration; // Card duration is required
+      if (bookingData) return true; // Appointment already scheduled
+      return formData.date && formData.timeSlot; // Other services need appointment
+    case 3:
+      return true; // Payment validation
+    default:
+      return false;
+  }
+};
 
   const handleNextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => prev + 1);
     } else {
-       toast.error('Please fill all required fields.');
+      toast.error('Please fill all required fields.');
     }
   };
 
-  // Determine item type for API call
+  // Enhanced getItemType function
   const getItemType = () => {
+    if (selectedCardPlan && medicines.length === 0 && labTests.length === 0 && !bookingData) return "card";
     if (bookingData && medicines.length === 0 && labTests.length === 0) return "appointment";
     if (medicines.length > 0 && labTests.length === 0 && !bookingData) return "medicine";
     if (labTests.length > 0 && medicines.length === 0 && !bookingData) return "test";
     return "mixed"; // If multiple types exist
   };
 
-  const handleRazorpayPayment = async () => {
-    if (!razorpayLoaded) {
-      toast.error("Payment system is loading. Please try again")
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Create order on backend
-      const token = localStorage.getItem("smartmeditoken");
-      console.log(token);
-
-      // Prepare order data according to new format
-      const orderPayload = {
-        amount: (finalAmount * 100).toString(), // Convert to paise
-        type: getItemType(),
-      };
-
-      const orderResponse = await fetch(
-        "https://medisawabackend.onrender.com/api/v1/payment/generateOrder",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(orderPayload),
-        }
-      );
-      console.log("Response status:", orderResponse.status);
-      console.log("Response headers:", [...orderResponse.headers.entries()]);
-
-      const orderData = await orderResponse.json();
-      console.log("orderData:", orderData);
-
-      // Extract relevant fields
-      const razorpayOrderId = orderData?.order?.id;
-      const amount = orderData?.order?.amount;
-      const currency = orderData?.order?.currency || "INR";
-      const transactionId = orderData?.result?._id;
-      const pay_amount = (orderData?.order?.amount / 100).toString();
-
-      if (!orderResponse.ok) {
-        throw new Error(orderData.error || "Failed to create order");
+  const renderCurrentStep = () => {
+  switch (currentStep) {
+    case 1:
+      return <PersonalInfoStep />;
+    case 2:
+      if (selectedCardPlan) {
+        return <CardDetailsStep />;
+      } else if (bookingData || cartItems.length > 0) {
+        return <AppointmentStep />;
       }
+      return <div>No service selected</div>;
+    case 3:
+      return <PaymentStep />;
+    default:
+      return <PersonalInfoStep />;
+  }
+};
 
-      // Razorpay options
-      const options = {
-        key: "rzp_test_AbH4EMmGnjMnzc",
-        amount: amount,
-        currency: currency,
-        name: "HealthCare Services",
-        description: bookingData ? 
-          `Appointment with Dr. ${bookingData.doctor.name}` : 
-          "Lab Tests & Medicines",
-        order_id: razorpayOrderId,
-        handler: async (response) => {
-          try {
-            // Prepare verification data according to new format
-            const verifyPayload = {
-              data: {
-                razorpay_signature: response.razorpay_signature,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-              },
-              transactionId: transactionId || orderData.id,
-              pay_amount: pay_amount,
-              type: getItemType(),
-            };
 
-            console.log("verifyPayload", verifyPayload);
+  // Add card pricing logic
+  const getCardPrice = (basePrice, duration) => {
+    const multipliers = {
+      'quarterly': 3,
+      'half-year': 6,
+      'annual': 12
+    };
 
-            // Add specific IDs based on item type
-            if (bookingData) {
-              verifyPayload.doctorId = bookingData.doctor.id;
-            }
-            if (medicines.length > 0) {
-              verifyPayload.medicineId = medicines[0].id;
-            }
-            if (labTests.length > 0) {
-              verifyPayload.testId = labTests[0].id;
-            }
+    const discounts = {
+      'quarterly': 0.05, // 5% discount
+      'half-year': 0.10, // 10% discount
+      'annual': 0.15     // 15% discount
+    };
 
-            // Verify payment on backend
-            const verifyResponse = await fetch(
-              "https://medisawabackend.onrender.com/api/v1/payment/verifyPayment",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(verifyPayload),
-              }
-            );
+    const cardPricing = selectedCardPlan ?
+      getCardPrice(parseInt(selectedCardPlan.price.replace('₹', '').replace(',', '')), cardPlanDuration) :
+      null;
 
-            const verifyData = await verifyResponse.json();
+    const cartTotal = cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    );
 
-            if (verifyResponse.ok && verifyData.success) {
-              // Payment successful - clear cart items (not booking data)
-              toast.success('Payment successful.');
-              clearAllCarts();
+    const appointmentFee = bookingData ?
+      parseInt(bookingData.doctor.consultationFee.replace('₹', '').replace(',', '')) : 0;
 
-              const finalOrderData = {
-                orderId: verifyData.orderId || response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                items: allItems,
-                customer: {
-                  userId: userData.userId,
-                  name: userData.name,
-                  email: userData.email,
-                  phone: userData.mobile,
-                  address: userData.address,
-                },
-                appointment: bookingData ? {
-                  doctorId: bookingData.doctor.id,
-                  doctorName: bookingData.doctor.name,
-                  appointmentType: bookingData.appointmentType,
-                  consultationType: bookingData.consultationType,
-                  date: bookingData.date,
-                  timeSlot: bookingData.time,
-                  consultationFee: bookingData.doctor.consultationFee,
-                } : {
-                  date: formData.date,
-                  timeSlot: formData.timeSlot,
-                },
-                payment: {
-                  method: "razorpay",
-                  amount: finalAmount,
-                  status: "completed",
-                },
-                orderDate: new Date().toISOString(),
-                status: "confirmed",
-              };
-              
-              toast.success('Payment successful')
-              console.log("Final Order Data:", finalOrderData);
-              navigate("/order-success", { state: { orderData: finalOrderData } });
-            } else {
-              throw new Error("Payment verification failed");
-            }
-          } catch (error) {
-            console.error("Payment verification error:", error);
-            alert("Payment verification failed. Please contact support.");
-          }
-        },
-        prefill: {
-          name: userData.name,
-          email: userData.email,
-          contact: userData.mobile,
-        },
-        notes: {
-          appointment_date: formData.date,
-          appointment_time: formData.timeSlot,
-          ...(bookingData && { doctor_name: bookingData.doctor.name }),
-        },
-        theme: {
-          color: "#2563eb",
-        },
-        modal: {
-          ondismiss: () => {
-            setIsProcessing(false);
-          },
-        },
-      };
+    const cardFee = cardPricing ? cardPricing.finalPrice : 0;
 
-      console.log("Razorpay options:", options);
+    const totalAmount = cartTotal + appointmentFee + cardFee;
+    const discountAmount = Math.round(totalAmount * 0.05); // Reduced discount for cards
+    const finalAmount = totalAmount - discountAmount;
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (error) {
-      console.error("Payment error:", error);
-      toast.error('Payment failed. Please try again.');
-      setIsProcessing(false);
-    }
+
+
+    const totalPrice = basePrice * multipliers[duration];
+    const discount = totalPrice * discounts[duration];
+    return {
+      basePrice,
+      totalPrice,
+      discount,
+      finalPrice: totalPrice - discount,
+      months: multipliers[duration]
+    };
   };
+
+
+ const handleRazorpayPayment = async () => {
+  if (!razorpayLoaded) {
+    toast.error("Payment system is loading. Please try again");
+    return;
+  }
+
+  setIsProcessing(true);
+
+  try {
+    const token = localStorage.getItem("smartmeditoken");
+    
+    // Prepare order data with card information
+    const orderPayload = {
+      amount: (finalAmount * 100).toString(),
+      type: getItemType(),
+      // Add card-specific data
+      ...(selectedCardPlan && {
+        cardId: selectedCardPlan.id,
+        cardPlanType: cardPlanDuration
+      })
+    };
+
+    console.log("Order Payload:", orderPayload);
+
+    const orderResponse = await fetch(
+      "https://medisawabackend.onrender.com/api/v1/payment/generateOrder",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderPayload),
+      }
+    );
+
+    const orderData = await orderResponse.json();
+    console.log("Order Data:", orderData);
+
+    if (!orderResponse.ok) {
+      throw new Error(orderData.error || "Failed to create order");
+    }
+
+    // Razorpay payment options
+    const options = {
+      key: "rzp_test_AbH4EMmGnjMnzc",
+      amount: orderData.order.amount,
+      currency: orderData.order.currency || "INR",
+      name: "Smart Care Health Services",
+      description: selectedCardPlan 
+        ? `Smart Care Card - ${selectedCardPlan.name} (${cardPlanDuration})`
+        : bookingData 
+          ? `Appointment with Dr. ${bookingData.doctor.name}` 
+          : "Healthcare Services",
+      order_id: orderData.order.id,
+      handler: async (response) => {
+        try {
+          const verifyPayload = {
+            data: {
+              razorpay_signature: response.razorpay_signature,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+            },
+            transactionId: orderData.result._id,
+            pay_amount: (orderData.order.amount / 100).toString(),
+            type: getItemType(),
+            // Add card-specific verification data
+            ...(selectedCardPlan && {
+              cardId: selectedCardPlan.id,
+              cardPlanType: cardPlanDuration
+            })
+          };
+
+          const verifyResponse = await fetch(
+            "https://medisawabackend.onrender.com/api/v1/payment/verifyPayment",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(verifyPayload),
+            }
+          );
+
+          const verifyData = await verifyResponse.json();
+
+          if (verifyResponse.ok && verifyData.success) {
+            toast.success('Payment successful');
+            clearAllCarts();
+
+            const finalOrderData = {
+              orderId: verifyData.orderId || response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              items: allItems,
+              // Add card information to order
+              ...(selectedCardPlan && {
+                cardPurchase: {
+                  cardId: selectedCardPlan.id,
+                  cardName: selectedCardPlan.name,
+                  planType: cardPlanDuration,
+                  planDuration: cardPricing.months,
+                  cardPrice: cardPricing.finalPrice,
+                  discount: cardPricing.discount
+                }
+              }),
+              customer: {
+                userId: userData.userId,
+                name: userData.name,
+                email: userData.email,
+                phone: userData.mobile,
+                address: userData.address,
+              },
+              payment: {
+                method: "razorpay",
+                amount: finalAmount,
+                status: "completed",
+              },
+              orderDate: new Date().toISOString(),
+              status: "confirmed",
+            };
+            
+            navigate("/order-success", { state: { orderData: finalOrderData } });
+          } else {
+            throw new Error("Payment verification failed");
+          }
+        } catch (error) {
+          console.error("Payment verification error:", error);
+          toast.error("Payment verification failed. Please contact support.");
+        }
+      },
+      prefill: {
+        name: userData.name,
+        email: userData.email,
+        contact: userData.mobile,
+      },
+      notes: {
+        ...(selectedCardPlan && {
+          card_type: selectedCardPlan.name,
+          plan_duration: cardPlanDuration
+        })
+      },
+      theme: {
+        color: "#2563eb",
+      },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    console.error("Payment error:", error);
+    toast.error('Payment failed. Please try again.');
+    setIsProcessing(false);
+  }
+};
+
 
   // Step indicator component (updated for 3 steps)
   const StepIndicator = () => (
@@ -385,19 +454,17 @@ const CheckoutPage = () => {
         <div key={step} className="flex items-center">
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center font-medium
-            ${
-              currentStep >= step
+            ${currentStep >= step
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 text-gray-600"
-            }`}
+              }`}
           >
             {currentStep > step ? <CheckCircle size={20} /> : step}
           </div>
           {step < 3 && (
             <div
-              className={`w-12 h-1 mx-2 ${
-                currentStep > step ? "bg-blue-600" : "bg-gray-200"
-              }`}
+              className={`w-12 h-1 mx-2 ${currentStep > step ? "bg-blue-600" : "bg-gray-200"
+                }`}
             />
           )}
         </div>
@@ -479,6 +546,131 @@ const CheckoutPage = () => {
     </div>
   );
 
+  // Add Card Selection Step (insert as step 2, shift others)
+const CardDetailsStep = () => {
+  if (!selectedCardPlan) return null;
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+        <Shield size={20} className="mr-2" />
+        Smart Care Card Details
+      </h3>
+
+      <div className={`bg-gradient-to-r ${selectedCardPlan.color} rounded-xl p-6 text-white mb-6`}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mr-3">
+              {selectedCardPlan.icon}
+            </div>
+            <div>
+              <h4 className="text-xl font-bold">{selectedCardPlan.name}</h4>
+              <p className="text-white/80">Premium Healthcare Access</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold">{selectedCardPlan.price}/month</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-white/70">Network</p>
+            <p className="font-medium">{selectedCardPlan.hospitals}</p>
+          </div>
+          <div>
+            <p className="text-white/70">Valid Till</p>
+            <p className="font-medium">{selectedCardPlan.validThru}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Plan Duration
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { value: 'quarterly', label: '3 Months', badge: '5% OFF' },
+              { value: 'half-year', label: '6 Months', badge: '10% OFF' },
+              { value: 'annual', label: '12 Months', badge: '15% OFF' }
+            ].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setCardPlanDuration(option.value)}
+                className={`relative p-4 rounded-lg border-2 text-center transition-all ${
+                  cardPlanDuration === option.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="font-medium">{option.label}</div>
+                <div className="text-sm text-gray-600">
+                  ₹{getCardPrice(parseInt(selectedCardPlan.price.replace('₹', '').replace(',', '')), option.value).finalPrice}
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    {option.badge}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {cardPricing && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h5 className="font-medium text-gray-800 mb-2">Pricing Breakdown</h5>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span>Base Price ({cardPricing.months} months)</span>
+                <span>₹{cardPricing.totalPrice}</span>
+              </div>
+              <div className="flex justify-between text-green-600">
+                <span>Duration Discount</span>
+                <span>-₹{cardPricing.discount}</span>
+              </div>
+              <div className="flex justify-between font-medium text-lg border-t pt-1">
+                <span>Card Total</span>
+                <span>₹{cardPricing.finalPrice}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-blue-50 rounded-lg p-4">
+          <h5 className="font-medium text-blue-800 mb-2">Card Benefits</h5>
+          <ul className="text-sm text-blue-700 space-y-1">
+            {selectedCardPlan.features && selectedCardPlan.features.length > 0 ? (
+              selectedCardPlan.features.slice(0, 3).map((feature, index) => (
+                <li key={index} className="flex items-center">
+                  <CheckCircle size={14} className="mr-2 text-blue-600" />
+                  {feature}
+                </li>
+              ))
+            ) : (
+              <>
+                <li className="flex items-center">
+                  <CheckCircle size={14} className="mr-2 text-blue-600" />
+                  Access to {selectedCardPlan.hospitals}
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle size={14} className="mr-2 text-blue-600" />
+                  24/7 Medical Support
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle size={14} className="mr-2 text-blue-600" />
+                  Emergency Services
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
   // Appointment Step (now step 2)
   const AppointmentStep = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -501,7 +693,7 @@ const CheckoutPage = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div>
@@ -519,7 +711,7 @@ const CheckoutPage = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-gray-700">Date</label>
@@ -670,7 +862,7 @@ const CheckoutPage = () => {
                 </div>
                 <div className="text-xs text-gray-500 capitalize">
                   {item.type === "test" ||
-                  labTests.find((lab) => lab.id === item.id)
+                    labTests.find((lab) => lab.id === item.id)
                     ? "Lab Test"
                     : "Medicine"}
                 </div>
@@ -748,6 +940,92 @@ const CheckoutPage = () => {
       )}
     </div>
   );
+
+  const EnhancedOrderSummary = () => (
+  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sticky top-24">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-lg font-bold text-gray-800">Order Summary</h2>
+      <span className="text-sm text-gray-500">
+        ({allItems.length + (selectedCardPlan ? 1 : 0)} items)
+      </span>
+    </div>
+
+    <div className="space-y-4 mb-4 max-h-64 overflow-y-auto">
+      {/* Smart Care Card Item */}
+      {selectedCardPlan && (
+        <div className="border border-blue-200 rounded-lg p-3 bg-blue-50">
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex-1">
+              <div className="font-medium text-gray-800 text-sm">
+                Smart Care Card - {selectedCardPlan.name}
+              </div>
+              <div className="text-xs text-blue-600 capitalize">
+                {cardPlanDuration.replace('-', ' ')} Plan
+              </div>
+              <div className="text-xs text-gray-500">
+                {cardPricing?.months} months coverage
+              </div>
+            </div>
+            <div className="flex items-center">
+              <Shield size={16} className="text-blue-600 mr-2" />
+            </div>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Card Fee</span>
+            <div className="text-right">
+              {cardPricing?.discount > 0 && (
+                <div className="text-xs text-gray-400 line-through">
+                  ₹{cardPricing.totalPrice}
+                </div>
+              )}
+              <div className="font-medium text-sm text-blue-600">
+                ₹{cardPricing?.finalPrice}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Existing items (doctor appointment, cart items) */}
+      {/* ... rest of your existing order summary items ... */}
+    </div>
+
+    <div className="border-t border-gray-200 pt-3 space-y-2">
+      {appointmentFee > 0 && (
+        <div className="flex justify-between text-gray-700">
+          <span>Consultation Fee</span>
+          <span>₹{appointmentFee}</span>
+        </div>
+      )}
+      {cartTotal > 0 && (
+        <div className="flex justify-between text-gray-700">
+          <span>Cart Subtotal</span>
+          <span>₹{cartTotal}</span>
+        </div>
+      )}
+      {cardFee > 0 && (
+        <div className="flex justify-between text-gray-700">
+          <span>Card Fee</span>
+          <span>₹{cardFee}</span>
+        </div>
+      )}
+      <div className="flex justify-between text-gray-700">
+        <span>Subtotal</span>
+        <span>₹{totalAmount}</span>
+      </div>
+      {discountAmount > 0 && (
+        <div className="flex justify-between text-gray-700">
+          <span>Discount</span>
+          <span className="text-green-600">- ₹{discountAmount}</span>
+        </div>
+      )}
+      <div className="flex justify-between font-bold text-gray-800 text-lg border-t pt-2">
+        <span>Total</span>
+        <span>₹{finalAmount}</span>
+      </div>
+    </div>
+  </div>
+);
 
   return (
     <div className="max-w-7xl mx-auto p-4 min-h-screen mt-20 mb-10">

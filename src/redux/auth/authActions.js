@@ -1,10 +1,11 @@
-
-
 // authActions.js
 import { 
   loginStart, 
   loginSuccess, 
   loginFailure, 
+  registerStart,
+  registerSuccess,
+  registerFailure,
   logout, 
   restoreSession, 
   updateProfile,
@@ -45,7 +46,112 @@ const ensureAxiosAuth = (token) => {
   return currentHeader === authHeader;
 };
 
-// Login action - FIXED: Always fetch profile after login
+// Registration action - NEW
+export const register = (userData) => async (dispatch) => {
+  try {
+    dispatch(registerStart());
+    
+    // Prepare registration data
+    const registrationData = {
+      name: userData.name,
+      email: userData.email,
+      mobile: userData.mobile,
+      password: userData.password,
+      address: userData.address
+    };
+
+    console.log('📝 Attempting registration with data:', {
+      ...registrationData,
+      password: '[HIDDEN]'
+    });
+
+    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.REGISTER, registrationData);
+    
+    console.log('✅ Registration API response:', response.data);
+    
+    // Handle different response formats
+    let token, user;
+    
+    if (response.data.token && response.data.user) {
+      // Format 1: { token, user }
+      token = response.data.token;
+      user = response.data.user;
+    } else if (response.data.data) {
+      // Format 2: { data: { token, user } }
+      token = response.data.data.token;
+      user = response.data.data.user;
+    } else if (response.data.access_token) {
+      // Format 3: { access_token, user_data }
+      token = response.data.access_token;
+      user = response.data.user_data || response.data.user;
+    } else {
+      // Handle registration without immediate login
+      dispatch(registerSuccess({
+        message: response.data.message || 'Registration successful! Please login.',
+        requiresLogin: true
+      }));
+      return { 
+        success: true, 
+        requiresLogin: true,
+        message: response.data.message || 'Registration successful! Please login.'
+      };
+    }
+
+    if (token && user) {
+      // Auto-login after successful registration
+      if (!ensureAxiosAuth(token)) {
+        throw new Error('Failed to configure axios authentication');
+      }
+      
+      // Fetch fresh profile data to ensure consistency
+      try {
+        console.log('📞 Fetching profile after registration...');
+        const profileResponse = await axiosInstance.get(API_ENDPOINTS.AUTH.PROFILE);
+        console.log('✅ Profile fetched after registration:', profileResponse.data);
+        
+        dispatch(registerSuccess({ 
+          token, 
+          user: profileResponse.data,
+          autoLogin: true
+        }));
+      } catch (profileError) {
+        console.warn('⚠️ Profile fetch failed, using registration data:', profileError);
+        dispatch(registerSuccess({ 
+          token, 
+          user,
+          autoLogin: true
+        }));
+      }
+      
+      return { success: true, autoLogin: true };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Registration failed:', error);
+    
+    let errorMessage = 'Registration failed';
+    
+    if (error.response?.data) {
+      if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data.errors) {
+        // Handle validation errors
+        const errors = error.response.data.errors;
+        if (typeof errors === 'object') {
+          errorMessage = Object.values(errors).flat().join(', ');
+        } else {
+          errorMessage = errors;
+        }
+      }
+    }
+    
+    dispatch(registerFailure(errorMessage));
+    return { success: false, error: errorMessage };
+  }
+};
+
+// Login action - EXISTING (with minor improvements)
 export const login = (credentials) => async (dispatch) => {
   try {
     dispatch(loginStart());
@@ -83,7 +189,7 @@ export const login = (credentials) => async (dispatch) => {
   }
 };
 
-// Logout action
+// Logout action - EXISTING
 export const logoutUser = () => async (dispatch) => {
   try {
     // Clear token from axios headers
@@ -98,7 +204,7 @@ export const logoutUser = () => async (dispatch) => {
   }
 };
 
-// Get user profile - FIXED: Separate profile fetch function
+// Get user profile - EXISTING
 export const getUserProfile = () => async (dispatch) => {
   try {
     const token = localStorage.getItem('smartmeditoken');
@@ -131,7 +237,7 @@ export const getUserProfile = () => async (dispatch) => {
   }
 };
 
-// Initialize authentication - Call this when app starts
+// Initialize authentication - EXISTING
 export const initializeAuth = () => async (dispatch) => {
   console.log('🚀 Initializing authentication...');
   dispatch(setAuthLoading(true));
@@ -149,7 +255,7 @@ export const initializeAuth = () => async (dispatch) => {
   }
 };
 
-// Check and restore authentication on page reload - FIXED: Proper flow
+// Check and restore authentication on page reload - EXISTING
 export const checkAuth = () => async (dispatch) => {
   try {
     // Clean any corrupted localStorage first

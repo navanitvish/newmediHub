@@ -8,13 +8,19 @@ const initialState = {
   error: null,
   user: null,
   loginRedirect: localStorage.getItem('smartmediloginRedirect') !== 'false',
-  initialized: false // Track if auth has been initialized
+  initialized: false,
+  // Registration specific states
+  registrationLoading: false,
+  registrationError: null,
+  registrationSuccess: false,
+  registrationMessage: null
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // Login actions
     loginStart: (state) => {
       state.loading = true;
       state.error = null;
@@ -26,6 +32,11 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.loginRedirect = false;
       state.initialized = true;
+      // Clear registration states on successful login
+      state.registrationSuccess = false;
+      state.registrationMessage = null;
+      state.registrationError = null;
+      
       localStorage.setItem('smartmeditoken', action.payload.token);
       localStorage.setItem('smartmediuserData', JSON.stringify(action.payload.user));
       localStorage.setItem('smartmediloginRedirect', 'false');
@@ -35,12 +46,62 @@ const authSlice = createSlice({
       state.error = action.payload;
       state.initialized = true;
     },
+
+    // Registration actions
+    registerStart: (state) => {
+      state.registrationLoading = true;
+      state.registrationError = null;
+      state.registrationSuccess = false;
+      state.registrationMessage = null;
+    },
+    registerSuccess: (state, action) => {
+      state.registrationLoading = false;
+      state.registrationSuccess = true;
+      
+      if (action.payload.autoLogin) {
+        // Auto-login after registration
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.loginRedirect = false;
+        state.initialized = true;
+        state.registrationMessage = 'Registration successful! Welcome to Smart Medihub.';
+        
+        localStorage.setItem('smartmeditoken', action.payload.token);
+        localStorage.setItem('smartmediuserData', JSON.stringify(action.payload.user));
+        localStorage.setItem('smartmediloginRedirect', 'false');
+      } else {
+        // Registration without auto-login
+        state.registrationMessage = action.payload.message || 'Registration successful! Please login to continue.';
+      }
+    },
+    registerFailure: (state, action) => {
+      state.registrationLoading = false;
+      state.registrationError = action.payload;
+      state.registrationSuccess = false;
+    },
+
+    // Clear registration states
+    clearRegistrationState: (state) => {
+      state.registrationLoading = false;
+      state.registrationError = null;
+      state.registrationSuccess = false;
+      state.registrationMessage = null;
+    },
+
+    // General auth actions
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.loginRedirect = true;
       state.initialized = true;
+      // Clear registration states
+      state.registrationLoading = false;
+      state.registrationError = null;
+      state.registrationSuccess = false;
+      state.registrationMessage = null;
+      
       localStorage.removeItem('smartmeditoken');
       localStorage.removeItem('smartmediuserData');
       localStorage.setItem('smartmediloginRedirect', 'true');
@@ -71,7 +132,7 @@ const authSlice = createSlice({
           state.isAuthenticated = true;
           state.loginRedirect = loginRedirect !== 'false';
           state.initialized = true;
-          console.log('✅ Session restored for user:', userData.email || userData.username || userData.id);
+          console.log('Session restored for user:', userData.email || userData.username || userData.id);
         } catch (error) {
           console.error('Error parsing user data:', error);
           localStorage.removeItem('smartmediuserData');
@@ -98,6 +159,10 @@ export const {
   loginStart,
   loginSuccess,
   loginFailure,
+  registerStart,
+  registerSuccess,
+  registerFailure,
+  clearRegistrationState,
   logout,
   updateProfile,
   restoreSession,
