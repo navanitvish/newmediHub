@@ -344,7 +344,7 @@ const DoctorDetailsPage = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold flex items-center justify-center gap-2"
                 disabled={doctor.onLeave}
@@ -359,7 +359,7 @@ const DoctorDetailsPage = () => {
                 <Video className="w-5 h-5" />
                 Video Consultation
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

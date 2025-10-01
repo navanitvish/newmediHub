@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, register } from '../../redux/auth/authActions';
 import { clearRegistrationState } from '../../redux/auth/authSlice';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AuthForms = () => {
   const dispatch = useDispatch();
@@ -14,17 +16,28 @@ const AuthForms = () => {
     registrationMessage,
     isAuthenticated 
   } = useSelector(state => state.auth);
+  const navigate = useNavigate();
 
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState('email');
   
-  // Login form state
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
   });
 
-  // Register form state
+  const [mobileLoginData, setMobileLoginData] = useState({
+    mobile: '',
+    otp: ''
+  });
+  const [sessionId, setSessionId] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [otpSuccess, setOtpSuccess] = useState('');
+  const [otpTimer, setOtpTimer] = useState(0);
+
   const [registerData, setRegisterData] = useState({
     name: '',
     email: '',
@@ -33,10 +46,18 @@ const AuthForms = () => {
     address: ''
   });
 
-  // Form validation
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Clear registration state when switching forms
+  useEffect(() => {
+    let interval;
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
   useEffect(() => {
     if (registrationSuccess || registrationError) {
       const timer = setTimeout(() => {
@@ -46,7 +67,6 @@ const AuthForms = () => {
     }
   }, [registrationSuccess, registrationError, dispatch]);
 
-  // Validation functions
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -70,6 +90,32 @@ const AuthForms = () => {
       errors.password = 'Password is required';
     } else if (loginData.password.length < 5) {
       errors.password = 'Password must be at least 5 characters';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateMobileLoginForm = () => {
+    const errors = {};
+    
+    if (!mobileLoginData.mobile.trim()) {
+      errors.mobile = 'Mobile number is required';
+    } else if (!validateMobile(mobileLoginData.mobile)) {
+      errors.mobile = 'Please enter a valid 10-digit mobile number';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateOtpForm = () => {
+    const errors = {};
+    
+    if (!mobileLoginData.otp.trim()) {
+      errors.otp = 'OTP is required';
+    } else if (mobileLoginData.otp.length !== 6) {
+      errors.otp = 'Please enter a valid 6-digit OTP';
     }
     
     setValidationErrors(errors);
@@ -113,6 +159,99 @@ const AuthForms = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const handleRequestOtp = async (e) => {
+    e.preventDefault();
+    setValidationErrors({});
+    setOtpError('');
+    setOtpSuccess('');
+    
+    if (!validateMobileLoginForm()) {
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(
+        'https://medisawabackend.onrender.com/api/v1/users/request/otp',
+        { mobile: mobileLoginData.mobile }
+      );
+      
+      if (response.data.success && response.data.result) {
+        // Store the sessionId from the response
+        const sessionIdFromResponse = response.data.result.Details;
+        setSessionId(sessionIdFromResponse);
+        
+        setOtpSuccess('OTP sent successfully to your mobile number!');
+        setOtpSent(true);
+        setOtpTimer(60);
+      } else {
+        setOtpError(response.data.message || 'Failed to send OTP');
+      }
+    } catch (err) {
+      setOtpError(err.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setValidationErrors({});
+    setOtpError('');
+    
+    if (!validateOtpForm()) {
+      return;
+    }
+
+    setOtpLoading(true);
+    
+    try {
+      const response = await axios.post(
+        'https://medisawabackend.onrender.com/api/v1/users/verify/otp',
+        { 
+          sessionId: sessionId,
+          otp: mobileLoginData.otp,
+          mobile: mobileLoginData.mobile,
+          fcmToken: "jwjcwejvr" // You can make this dynamic or get from device
+        }
+      );
+      
+      if (response.data.success) {
+        setOtpSuccess('Login successful!');
+        console.log('OTP verification successful:', response.data);
+        navigate('/'); // Redirect to home or dashboard
+        
+        // Store token if provided
+        if (response.data.token) {
+          // Note: localStorage won't work in Claude artifacts
+          // In production, this would be: localStorage.setItem('token', response.data.token);
+          console.log('Token received:', response.data.token);
+        }
+        
+        // Update Redux state with user data
+        dispatch({
+          type: 'auth/loginSuccess',
+          payload: {
+            user: response.data.user || response.data.result,
+            token: response.data.token
+          }
+        });
+        
+        setMobileLoginData({ mobile: '', otp: '' });
+        setOtpSent(false);
+        setSessionId('');
+      } else {
+        setOtpError(response.data.message || 'Invalid OTP');
+      }
+    } catch (err) {
+      setOtpError(err.response?.data?.message || 'Invalid OTP. Please try again.');
+      console.error('OTP verification error:', err);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setValidationErrors({});
@@ -129,8 +268,8 @@ const AuthForms = () => {
       
       if (result.success) {
         console.log('Login successful');
-        // Reset form
         setLoginData({ email: '', password: '' });
+         navigate('/');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -156,8 +295,8 @@ const AuthForms = () => {
       
       if (result.success) {
         console.log('Registration result:', result);
+         navigate('/'); // Redirect to home or login
         
-        // Reset form
         setRegisterData({ 
           name: '', 
           email: '', 
@@ -166,10 +305,10 @@ const AuthForms = () => {
           address: '' 
         });
         
-        // If auto-login didn't happen, switch to login form
         if (result.requiresLogin) {
           setTimeout(() => {
             setIsLogin(true);
+            setLoginMethod('email');
           }, 3000);
         }
       }
@@ -182,23 +321,44 @@ const AuthForms = () => {
     setIsLogin(!isLogin);
     setValidationErrors({});
     setLoginData({ email: '', password: '' });
+    setMobileLoginData({ mobile: '', otp: '' });
     setRegisterData({ name: '', email: '', mobile: '', password: '', address: '' });
+    setOtpSent(false);
+    setOtpError('');
+    setOtpSuccess('');
+    setLoginMethod('email');
+    setSessionId('');
     dispatch(clearRegistrationState());
   };
 
-  // Get current error message
+  const switchLoginMethod = (method) => {
+    setLoginMethod(method);
+    setValidationErrors({});
+    setLoginData({ email: '', password: '' });
+    setMobileLoginData({ mobile: '', otp: '' });
+    setOtpSent(false);
+    setOtpError('');
+    setOtpSuccess('');
+    setSessionId('');
+  };
+
+  const handleResendOtp = () => {
+    if (otpTimer === 0) {
+      handleRequestOtp({ preventDefault: () => {} });
+    }
+  };
+
   const getCurrentError = () => {
     if (isLogin) {
-      return error;
+      return loginMethod === 'mobile' ? otpError : error;
     } else {
       return registrationError;
     }
   };
 
-  // Get current loading state
   const getCurrentLoading = () => {
     if (isLogin) {
-      return loading;
+      return loginMethod === 'mobile' ? otpLoading : loading;
     } else {
       return registrationLoading;
     }
@@ -206,27 +366,15 @@ const AuthForms = () => {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
-      {/* Animated Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        {/* Animated Orbs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
-        
-        {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-        
-        {/* Floating Particles */}
-        <div className="absolute top-20 left-20 w-2 h-2 bg-cyan-400 rounded-full animate-ping"></div>
-        <div className="absolute top-40 right-32 w-1 h-1 bg-purple-400 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-32 left-48 w-3 h-3 bg-pink-400 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-20 right-20 w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{animationDelay: '3s'}}></div>
       </div>
 
       <div className="min-h-screen w-full flex flex-col md:flex-row relative z-10">
-        {/* Left side - Auth Form */}
         <div className="w-full md:w-1/2 flex items-center justify-center px-6 py-8 backdrop-blur-sm">
           <div className="w-full max-w-md p-8 space-y-8">
-            {/* Logo Section */}
             <div className="text-center space-y-4">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 shadow-2xl shadow-blue-500/25 mb-6">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -241,7 +389,6 @@ const AuthForms = () => {
               </p>
             </div>
             
-            {/* Form Toggle */}
             <div className="flex bg-white/5 backdrop-blur-sm rounded-2xl p-1 border border-white/10">
               <button
                 onClick={() => setIsLogin(true)}
@@ -264,20 +411,43 @@ const AuthForms = () => {
                 Register
               </button>
             </div>
+
+            {isLogin && (
+              <div className="flex bg-white/5 backdrop-blur-sm rounded-2xl p-1 border border-white/10">
+                <button
+                  onClick={() => switchLoginMethod('email')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-300 ${
+                    loginMethod === 'email'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Email Login
+                </button>
+                <button
+                  onClick={() => switchLoginMethod('mobile')}
+                  className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-300 ${
+                    loginMethod === 'mobile'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Mobile OTP
+                </button>
+              </div>
+            )}
             
-            {/* Success Message */}
-            {registrationSuccess && registrationMessage && (
+            {(registrationSuccess && registrationMessage) || (otpSuccess && loginMethod === 'mobile') ? (
               <div className="p-4 bg-green-500/10 backdrop-blur-sm border border-green-500/20 rounded-2xl shadow-lg">
                 <div className="flex items-center text-green-300">
                   <svg className="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-sm font-medium">{registrationMessage}</span>
+                  <span className="text-sm font-medium">{registrationMessage || otpSuccess}</span>
                 </div>
               </div>
-            )}
+            ) : null}
             
-            {/* Error Message */}
             {getCurrentError() && (
               <div className="p-4 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-2xl shadow-lg">
                 <div className="flex items-center text-red-300">
@@ -289,10 +459,8 @@ const AuthForms = () => {
               </div>
             )}
 
-            {/* Login Form */}
-            {isLogin && (
-              <div className="space-y-6" style={{animation: 'fadeIn 0.5s ease-in-out'}}>
-                {/* Email Field */}
+            {isLogin && loginMethod === 'email' && (
+              <div className="space-y-6">
                 <div className="space-y-2">
                   <label htmlFor="login-email" className="block text-sm font-semibold text-slate-200">
                     Email Address
@@ -306,26 +474,22 @@ const AuthForms = () => {
                     </div>
                     <input
                       id="login-email"
-                      name="login-email"
                       type="email"
-                      required
                       value={loginData.email}
                       onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
+                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
                         validationErrors.email 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
+                          ? 'border-red-500/50 focus:ring-red-400/50' 
+                          : 'border-white/10 focus:ring-cyan-400/50'
                       }`}
                       placeholder="Enter your email"
                     />
                     {validationErrors.email && (
                       <p className="mt-1 text-sm text-red-400">{validationErrors.email}</p>
                     )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
                   </div>
                 </div>
                 
-                {/* Password Field */}
                 <div className="space-y-2">
                   <label htmlFor="login-password" className="block text-sm font-semibold text-slate-200">
                     Password
@@ -338,15 +502,13 @@ const AuthForms = () => {
                     </div>
                     <input
                       id="login-password"
-                      name="login-password"
                       type={showPassword ? "text" : "password"}
-                      required
                       value={loginData.password}
                       onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                      className={`block w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
+                      className={`block w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
                         validationErrors.password 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
+                          ? 'border-red-500/50 focus:ring-red-400/50' 
+                          : 'border-white/10 focus:ring-cyan-400/50'
                       }`}
                       placeholder="Enter your password"
                     />
@@ -367,195 +529,229 @@ const AuthForms = () => {
                     {validationErrors.password && (
                       <p className="mt-1 text-sm text-red-400">{validationErrors.password}</p>
                     )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                  </div>
-                </div>
-
-                {/* Remember Me & Forgot Password */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center group">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-cyan-400 bg-white/10 border-white/20 rounded focus:ring-cyan-400/50 focus:ring-2"
-                    />
-                    <label htmlFor="remember-me" className="ml-3 block text-sm text-slate-300 group-hover:text-white transition-colors cursor-pointer">
-                      Remember me
-                    </label>
-                  </div>
-
-                  <div className="text-sm">
-                    <button type="button" className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors">
-                      Forgot password?
-                    </button>
                   </div>
                 </div>
                 
-                {/* Submit Button */}
-                <div>
-                  <button
-                    onClick={handleLoginSubmit}
-                    disabled={getCurrentLoading()}
-                    className={`group relative w-full flex justify-center py-4 px-6 border border-transparent rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-600 hover:via-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 ${
-                      getCurrentLoading() ? 'opacity-70 cursor-not-allowed hover:transform-none' : ''
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      {getCurrentLoading() && (
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
-                      )}
-                      {getCurrentLoading() ? 'Signing in...' : 'Sign in'}
-                    </div>
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-r from-white/10 to-white/0 transition-opacity duration-300"></div>
-                  </button>
-                </div>
+                <button
+                  onClick={handleLoginSubmit}
+                  disabled={getCurrentLoading()}
+                  className={`w-full py-4 px-6 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 shadow-lg ${
+                    getCurrentLoading() ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {getCurrentLoading() ? 'Signing in...' : 'Sign in'}
+                </button>
 
-                {/* Sign Up Link */}
-                <div className="text-center">
-                  <p className="text-sm text-slate-400">
-                    Don't have an account?{' '}
-                    <button onClick={toggleForm} className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">
-                      Register here
-                    </button>
-                  </p>
-                </div>
+                <p className="text-center text-sm text-slate-400">
+                  Don't have an account?{' '}
+                  <button onClick={toggleForm} className="font-semibold text-cyan-400 hover:text-cyan-300">
+                    Register here
+                  </button>
+                </p>
               </div>
             )}
 
-            {/* Register Form */}
+            {isLogin && loginMethod === 'mobile' && (
+              <div className="space-y-6">
+                {!otpSent ? (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-slate-200">
+                        Mobile Number
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                          <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                          </svg>
+                        </div>
+                        <input
+                          type="tel"
+                          value={mobileLoginData.mobile}
+                          onChange={(e) => setMobileLoginData({...mobileLoginData, mobile: e.target.value.replace(/\D/g, '')})}
+                          className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                            validationErrors.mobile 
+                              ? 'border-red-500/50 focus:ring-red-400/50' 
+                              : 'border-white/10 focus:ring-cyan-400/50'
+                          }`}
+                          placeholder="Enter 10-digit mobile number"
+                          maxLength="10"
+                        />
+                        {validationErrors.mobile && (
+                          <p className="mt-1 text-sm text-red-400">{validationErrors.mobile}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleRequestOtp}
+                      disabled={otpLoading}
+                      className={`w-full py-4 px-6 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg ${
+                        otpLoading ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {otpLoading ? 'Sending OTP...' : 'Send OTP'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-slate-200">
+                        Enter OTP
+                      </label>
+                      <div className="relative group">
+                        <input
+                          type="text"
+                          value={mobileLoginData.otp}
+                          onChange={(e) => setMobileLoginData({...mobileLoginData, otp: e.target.value.replace(/\D/g, '')})}
+                          className={`block w-full px-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                            validationErrors.otp 
+                              ? 'border-red-500/50 focus:ring-red-400/50' 
+                              : 'border-white/10 focus:ring-cyan-400/50'
+                          }`}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength="6"
+                        />
+                        {validationErrors.otp && (
+                          <p className="mt-1 text-sm text-red-400">{validationErrors.otp}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-sm text-slate-400">
+                          OTP sent to {mobileLoginData.mobile}
+                        </p>
+                        {otpTimer > 0 ? (
+                          <p className="text-sm text-cyan-400 font-semibold">
+                            Resend in {otpTimer}s
+                          </p>
+                        ) : (
+                          <button
+                            onClick={handleResendOtp}
+                            className="text-sm font-semibold text-cyan-400 hover:text-cyan-300"
+                          >
+                            Resend OTP
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleVerifyOtp}
+                      disabled={otpLoading}
+                      className={`w-full py-4 px-6 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg ${
+                        otpLoading ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      {otpLoading ? 'Verifying...' : 'Verify OTP'}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setOtpSent(false);
+                        setMobileLoginData({ mobile: '', otp: '' });
+                        setOtpError('');
+                        setValidationErrors({});
+                        setSessionId('');
+                      }}
+                      className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+                    >
+                      ← Change Mobile Number
+                    </button>
+                  </>
+                )}
+
+                <p className="text-center text-sm text-slate-400">
+                  Don't have an account?{' '}
+                  <button onClick={toggleForm} className="font-semibold text-cyan-400 hover:text-cyan-300">
+                    Register here
+                  </button>
+                </p>
+              </div>
+            )}
+
             {!isLogin && (
-              <div className="space-y-6" style={{animation: 'fadeIn 0.5s ease-in-out'}}>
-                {/* Name Field */}
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="register-name" className="block text-sm font-semibold text-slate-200">
+                  <label className="block text-sm font-semibold text-slate-200">
                     Full Name
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <input
-                      id="register-name"
-                      name="register-name"
-                      type="text"
-                      required
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
-                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
-                        validationErrors.name 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                      }`}
-                      placeholder="Enter your full name"
-                    />
-                    {validationErrors.name && (
-                      <p className="mt-1 text-sm text-red-400">{validationErrors.name}</p>
-                    )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                  </div>
+                  <input
+                    type="text"
+                    value={registerData.name}
+                    onChange={(e) => setRegisterData({...registerData, name: e.target.value})}
+                    className={`block w-full px-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                      validationErrors.name 
+                        ? 'border-red-500/50 focus:ring-red-400/50' 
+                        : 'border-white/10 focus:ring-cyan-400/50'
+                    }`}
+                    placeholder="Enter your full name"
+                  />
+                  {validationErrors.name && (
+                    <p className="mt-1 text-sm text-red-400">{validationErrors.name}</p>
+                  )}
                 </div>
 
-                {/* Email Field */}
                 <div className="space-y-2">
-                  <label htmlFor="register-email" className="block text-sm font-semibold text-slate-200">
+                  <label className="block text-sm font-semibold text-slate-200">
                     Email Address
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                      </svg>
-                    </div>
-                    <input
-                      id="register-email"
-                      name="register-email"
-                      type="email"
-                      required
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
-                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
-                        validationErrors.email 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                      }`}
-                      placeholder="Enter your email"
-                    />
-                    {validationErrors.email && (
-                      <p className="mt-1 text-sm text-red-400">{validationErrors.email}</p>
-                    )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                  </div>
+                  <input
+                    type="email"
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                    className={`block w-full px-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                      validationErrors.email 
+                        ? 'border-red-500/50 focus:ring-red-400/50' 
+                        : 'border-white/10 focus:ring-cyan-400/50'
+                    }`}
+                    placeholder="Enter your email"
+                  />
+                  {validationErrors.email && (
+                    <p className="mt-1 text-sm text-red-400">{validationErrors.email}</p>
+                  )}
                 </div>
 
-                {/* Mobile Field */}
                 <div className="space-y-2">
-                  <label htmlFor="register-mobile" className="block text-sm font-semibold text-slate-200">
+                  <label className="block text-sm font-semibold text-slate-200">
                     Mobile Number
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                      </svg>
-                    </div>
-                    <input
-                      id="register-mobile"
-                      name="register-mobile"
-                      type="tel"
-                      required
-                      value={registerData.mobile}
-                      onChange={(e) => setRegisterData({...registerData, mobile: e.target.value.replace(/\D/g, '')})}
-                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
-                        validationErrors.mobile 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                      }`}
-                      placeholder="Enter your mobile number"
-                      maxLength="10"
-                    />
-                    {validationErrors.mobile && (
-                      <p className="mt-1 text-sm text-red-400">{validationErrors.mobile}</p>
-                    )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                  </div>
+                  <input
+                    type="tel"
+                    value={registerData.mobile}
+                    onChange={(e) => setRegisterData({...registerData, mobile: e.target.value.replace(/\D/g, '')})}
+                    className={`block w-full px-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                      validationErrors.mobile 
+                        ? 'border-red-500/50 focus:ring-red-400/50' 
+                        : 'border-white/10 focus:ring-cyan-400/50'
+                    }`}
+                    placeholder="Enter your mobile number"
+                    maxLength="10"
+                  />
+                  {validationErrors.mobile && (
+                    <p className="mt-1 text-sm text-red-400">{validationErrors.mobile}</p>
+                  )}
                 </div>
 
-                {/* Password Field */}
                 <div className="space-y-2">
-                  <label htmlFor="register-password" className="block text-sm font-semibold text-slate-200">
+                  <label className="block text-sm font-semibold text-slate-200">
                     Password
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
+                  <div className="relative">
                     <input
-                      id="register-password"
-                      name="register-password"
                       type={showPassword ? "text" : "password"}
-                      required
                       value={registerData.password}
                       onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                      className={`block w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
+                      className={`block w-full px-4 py-4 pr-12 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
                         validationErrors.password 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
+                          ? 'border-red-500/50 focus:ring-red-400/50' 
+                          : 'border-white/10 focus:ring-cyan-400/50'
                       }`}
                       placeholder="Create a password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center z-10"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center"
                     >
                       <svg className="h-5 w-5 text-slate-400 hover:text-cyan-400 transition-colors" fill="currentColor" viewBox="0 0 20 20">
                         {showPassword ? (
@@ -563,85 +759,55 @@ const AuthForms = () => {
                         ) : (
                           <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                         )}
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                       </svg>
                     </button>
                     {validationErrors.password && (
                       <p className="mt-1 text-sm text-red-400">{validationErrors.password}</p>
                     )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
                   </div>
                 </div>
 
-                {/* Address Field */}
                 <div className="space-y-2">
-                  <label htmlFor="register-address" className="block text-sm font-semibold text-slate-200">
+                  <label className="block text-sm font-semibold text-slate-200">
                     Address
                   </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                      <svg className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-400 transition-colors duration-300" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <input
-                      id="register-address"
-                      name="register-address"
-                      type="text"
-                      required
-                      value={registerData.address}
-                      onChange={(e) => setRegisterData({...registerData, address: e.target.value})}
-                      className={`block w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 hover:bg-white/10 ${
-                        validationErrors.address 
-                          ? 'border-red-500/50 focus:ring-red-400/50 focus:border-red-400/50' 
-                          : 'border-white/10 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                      }`}
-                      placeholder="Enter your address"
-                    />
-                    {validationErrors.address && (
-                      <p className="mt-1 text-sm text-red-400">{validationErrors.address}</p>
-                    )}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/0 via-blue-400/0 to-purple-400/0 group-focus-within:from-cyan-400/10 group-focus-within:via-blue-400/10 group-focus-within:to-purple-400/10 transition-all duration-300 pointer-events-none"></div>
-                  </div>
+                  <input
+                    type="text"
+                    value={registerData.address}
+                    onChange={(e) => setRegisterData({...registerData, address: e.target.value})}
+                    className={`block w-full px-4 py-4 bg-white/5 backdrop-blur-sm border rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+                      validationErrors.address 
+                        ? 'border-red-500/50 focus:ring-red-400/50' 
+                        : 'border-white/10 focus:ring-cyan-400/50'
+                    }`}
+                    placeholder="Enter your address"
+                  />
+                  {validationErrors.address && (
+                    <p className="mt-1 text-sm text-red-400">{validationErrors.address}</p>
+                  )}
                 </div>
                 
-                {/* Submit Button */}
-                <div>
-                  <button
-                    onClick={handleRegisterSubmit}
-                    disabled={getCurrentLoading()}
-                    className={`group relative w-full flex justify-center py-4 px-6 border border-transparent rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-600 hover:via-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 ${
-                      getCurrentLoading() ? 'opacity-70 cursor-not-allowed hover:transform-none' : ''
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      {getCurrentLoading() && (
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
-                      )}
-                      {getCurrentLoading() ? 'Creating Account...' : 'Create Account'}
-                    </div>
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-r from-white/10 to-white/0 transition-opacity duration-300"></div>
-                  </button>
-                </div>
+                <button
+                  onClick={handleRegisterSubmit}
+                  disabled={getCurrentLoading()}
+                  className={`w-full py-4 px-6 rounded-2xl text-base font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-all duration-300 shadow-lg ${
+                    getCurrentLoading() ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {getCurrentLoading() ? 'Creating Account...' : 'Create Account'}
+                </button>
 
-                {/* Sign In Link */}
-                <div className="text-center">
-                  <p className="text-sm text-slate-400">
-                    Already have an account?{' '}
-                    <button onClick={toggleForm} className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">
-                      Sign in here
-                    </button>
-                  </p>
-                </div>
+                <p className="text-center text-sm text-slate-400">
+                  Already have an account?{' '}
+                  <button onClick={toggleForm} className="font-semibold text-cyan-400 hover:text-cyan-300">
+                    Sign in here
+                  </button>
+                </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right side - Welcome Content */}
         <div className="w-full md:w-1/2 flex items-center justify-center px-6 py-8">
           <div className="w-full max-w-lg text-center space-y-8">
             <div className="space-y-6">
@@ -650,8 +816,10 @@ const AuthForms = () => {
               </h2>
               <p className="text-xl text-slate-300 font-light leading-relaxed">
                 {isLogin 
-                  ? "Your gateway to intelligent healthcare solutions. Access your personalized medical dashboard and continue your health journey."
-                  : "Join thousands of users who trust Smart Medihub for their healthcare needs. Get started today and experience the future of medical care."
+                  ? loginMethod === 'mobile' 
+                    ? "Quick and secure login with OTP. No password needed - just your mobile number!"
+                    : "Your gateway to intelligent healthcare solutions. Access your personalized medical dashboard."
+                  : "Join thousands of users who trust Smart Medihub for their healthcare needs."
                 }
               </p>
             </div>
@@ -664,7 +832,7 @@ const AuthForms = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Secure</h3>
-                <p className="text-slate-400 text-sm">Bank-level encryption for your health data</p>
+                <p className="text-slate-400 text-sm">Bank-level encryption</p>
               </div>
               
               <div className="p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-cyan-400/30 transition-all duration-300">
@@ -674,7 +842,7 @@ const AuthForms = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Fast</h3>
-                <p className="text-slate-400 text-sm">Instant access to medical records</p>
+                <p className="text-slate-400 text-sm">Instant access</p>
               </div>
               
               <div className="p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:border-cyan-400/30 transition-all duration-300">
@@ -684,7 +852,7 @@ const AuthForms = () => {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Easy</h3>
-                <p className="text-slate-400 text-sm">Simple and intuitive interface</p>
+                <p className="text-slate-400 text-sm">Simple interface</p>
               </div>
             </div>
           </div>

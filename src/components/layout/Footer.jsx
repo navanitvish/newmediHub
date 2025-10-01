@@ -21,9 +21,9 @@ const Footer = () => {
           <div>
             <div className="flex flex-col mb-4">
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Smart Care
+              MediSeve
               </h1>
-              
+
             </div>
 
 
@@ -168,13 +168,14 @@ const Footer = () => {
                   className="text-blue-400 mr-3 mt-1 flex-shrink-0"
                 />
                 <span className="text-gray-400">
-                  Smart Care Diagnostics, 123 Healthcare Avenue, New Delhi -
-                  110001, India
+                  FLOOR 2, B88, B89, UNIT NO S2,
+                  SHYAM MITRA MANDAL, MURLIPURA
+                  Jaipur, Rajasthan, India- 302039
                 </span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="text-blue-400 mr-3 flex-shrink-0" />
-                <span className="text-gray-400">+91 1800-123-4567</span>
+                <span className="text-gray-400">+91 7976379263</span>
               </li>
               <li className="flex items-center">
                 <Mail size={20} className="text-blue-400 mr-3 flex-shrink-0" />

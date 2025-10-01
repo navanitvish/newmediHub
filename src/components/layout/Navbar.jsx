@@ -7,6 +7,8 @@ import { selectLabTestTotalQuantity } from "../../redux/slices/labTestSlice";
 import { selectMedicineTotalQuantity } from "../../redux/slices/medicineSlice";
 import { ShoppingCart, Shield, Heart } from "lucide-react";
 
+import logo from "../../assets/logo.png";
+
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -104,7 +106,7 @@ const Navbar = () => {
                       {/* <Shield className="w-4 h-4 text-white absolute -top-1 -right-1 opacity-80" /> */}
                       <img
                         className="h-10 w-10 mt-1 aspect-auto scale-170 text-center rounded-full transition-transform duration-300 hover:scale-110"
-                        src="/src/assets/logo.png"
+                        src={logo}
                         alt="Logo"
                       />
                     </div>
@@ -114,7 +116,7 @@ const Navbar = () => {
                 {/* Logo Text */}
                 <div className="flex flex-col">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Smart Care
+                    MediSeve
                   </h1>
                   <p className="text-sm text-gray-500 font-medium tracking-wide">
                     Healthcare Solutions
@@ -397,7 +399,7 @@ const Navbar = () => {
                       Login
                     </Link>
                     <Link
-                      to="/register"
+                      to="/login"
                       className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full hover:from-blue-600 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all"
                     >
                       Register
